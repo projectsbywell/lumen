@@ -7,5 +7,6 @@ __pycache__/
 dist/
 /build/
 registry_data/
+.lumen/
 *.pdf
 !examples/book/*.pdf
