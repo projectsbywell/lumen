@@ -5,7 +5,7 @@
 # `SHA256SUMS-Windows.txt`, gerados pelo CI em `infra/ci.yml`, job
 # build-release, passo "Checksums sha256"):
 #
-#   gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen \
+#   gh release download v0.5.4 --repo projectsbywell/lumen \
 #     -D ./lumen-dl && cd ./lumen-dl && sha256sum *
 #
 # Assets da tag v0.5.4 (nomes publicados no GitHub Release):
@@ -28,7 +28,7 @@
 #   wheel macOS  f088f6c779163792dfa288b45b0d044901a32e3b1bba5f82220f6b1ae5825b14
 #
 # Verificação (rode no diretório com os assets baixados):
-#   gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+#   gh release download v0.5.4 --repo projectsbywell/lumen -D ./lumen-dl
 #   cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
 # (No Windows: `certutil -hashfile <asset> SHA256` e compare com as linhas.)
 2a0773260382f9eeb50e89bd45dada073cc296320fb7b7741e82e82b7a456530  lumen-0.5.4.tar.gz

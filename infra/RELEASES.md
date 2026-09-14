@@ -24,7 +24,7 @@
   `Ok`/`Err`/`assert` reais na VM) + 2 testes e2e (002/004); tag
   `v0.5.4` publicada com Release + 8 assets, site HTTP 200.
 - Breaking: **nenhum** — semântica e APIs intactas.
-- Repo: https://github.com/wellintondossantosalmeida-boop/lumen (CI + Pages + releases em tags `v*`).
+- Repo: https://github.com/projectsbywell/lumen (CI + Pages + releases em tags `v*`).
 
 ## v0.5.0 — 2026-09-14 (atual, runtime: Objeto+async+DAP gaps+fmt)
 
@@ -39,7 +39,7 @@
   (8 testes).
 - **Qualidade**: **576 unit + 17 boost OK**, **50/50 conformidade**.
 - Breaking: nenhum.
-- Repo: https://github.com/wellintondossantosalmeida-boop/lumen (CI + Pages + releases em tags `v*`).
+- Repo: https://github.com/projectsbywell/lumen (CI + Pages + releases em tags `v*`).
 
 ## v0.4.0 — 2026-09-14 (ecossistema: GC+VM, TLS/audit, DAP, site/PDF, releases)
 

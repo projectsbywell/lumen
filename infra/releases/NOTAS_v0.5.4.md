@@ -12,7 +12,7 @@ v0.5.x compila e roda igual.
 
 - **Versões unificadas em `0.5.4`**: `lumen.toml`, `pyproject.toml`
   (com `Repository` corrigido para
-  `https://github.com/wellintondossantosalmeida-boop/lumen`),
+  `https://github.com/projectsbywell/lumen`),
   `lumen_cli.py` (`__version__` + docstring), `conformance/suite.py`
   (`SPEC_VERSION` + `SUITE_VERSION`), `docs/gen.py` (`SPEC_VERSION`),
   `spec/SPEC.md` + `EBNF.md` + `TIPOS.md` + `SEMANTICA.md`.
@@ -61,7 +61,7 @@ pip install lumen-0.5.0-py3-none-any.whl         # do asset baixado
 ### Binário nativo (sem Python instalado)
 
 ```sh
-gh release download v0.5.3 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+gh release download v0.5.3 --repo projectsbywell/lumen -D ./lumen-dl
 cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
 chmod +x lumen-linux && sudo mv lumen-linux /usr/local/bin/lumen
 ```

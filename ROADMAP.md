@@ -82,7 +82,7 @@
 ## v0.5.4 — Integração (unificar versões + docs + gates; 595+17 testes + 50/50)
 
 - [x] **Versões unificadas em `0.5.4`** — `lumen.toml`, `pyproject.toml`
-      (+ `Repository` → `wellintondossantosalmeida-boop/lumen`),
+      (+ `Repository` → `projectsbywell/lumen`),
       `lumen_cli.py` (`__version__` + docstring), `conformance/suite.py`
       (`SPEC_VERSION`/`SUITE_VERSION`), `docs/gen.py` (`SPEC_VERSION`),
       `spec/SPEC.md` + `EBNF.md` + `TIPOS.md` + `SEMANTICA.md`;

@@ -33,7 +33,7 @@ classifiers = [
 lumen = "lumen_cli:main"
 
 [project.urls]
-Repository = "https://github.com/wellintondossantosalmeida-boop/lumen"
+Repository = "https://github.com/projectsbywell/lumen"
 
 # Módulo único na raiz (entry point do script `lumen`).
 # O resto do código vive em pacotes namespace (sem __init__.py), descobertos

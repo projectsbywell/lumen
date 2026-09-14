@@ -38,6 +38,6 @@ binario_windows = "dist/lumen.exe        (PyInstaller onefile)"
 binario_macos = "dist/lumen              (PyInstaller onefile)"
 checksums = "infra/releases/SHA256SUMS.txt"
 # Verificação (SHAs reais da tag v0.5.4; rode no dir com os assets):
-#   gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+#   gh release download v0.5.4 --repo projectsbywell/lumen -D ./lumen-dl
 #   cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
 notas = "infra/releases/NOTAS_v0.5.4.md"

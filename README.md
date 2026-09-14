@@ -31,7 +31,7 @@ em `infra/releases/SHA256SUMS.txt`):
 
 ```sh
 # baixar os assets e verificar (rode no diretório dos assets):
-gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+gh release download v0.5.4 --repo projectsbywell/lumen -D ./lumen-dl
 cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
 # depois:
 chmod +x lumen && sudo mv lumen /usr/local/bin/
