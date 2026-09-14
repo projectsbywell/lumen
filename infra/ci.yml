@@ -76,7 +76,7 @@ jobs:
           set -euo pipefail
           gate() {
             local ex="$1" want="$2" out="" err="" rc=0
-            out=$(python3 compiler/run.py "$ex" 2>err.log) || rc=$?
+            out=$(python3 compiler/run.py "$ex" 2>err.log | tr -d '\r') || rc=$?
             err=$(cat err.log 2>/dev/null || true); rm -f err.log
             if [ "$rc" -ne 0 ]; then
               printf 'FAIL %s rc=%s\nSTDOUT:\n%s\nSTDERR:\n%s\n' "$ex" "$rc" "$out" "$err"
