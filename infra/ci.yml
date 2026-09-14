@@ -74,14 +74,24 @@ jobs:
           PYTHONUTF8: "1"
         run: |
           set -euo pipefail
-          out=$(python3 compiler/run.py examples/001_hello.lum 2>/dev/null)
-          test "$out" = "Olá, Lumen!"
-          out=$(python3 compiler/run.py examples/002_fatorial.lum 2>/dev/null)
-          test "$out" = "5! = 120"
-          out=$(python3 compiler/run.py examples/003_fibonacci.lum 2>/dev/null)
-          test "$out" = "$(printf '0\n1\n1\n2\n3\n5\n8\n13\n21\n34')"
-          out=$(python3 compiler/run.py examples/004_match.lum 2>/dev/null)
-          test "$out" = "$(printf 'zero\npequeno\nnegativo\ngrande\nmédio')"
+          gate() {
+            local ex="$1" want="$2" out="" err="" rc=0
+            out=$(python3 compiler/run.py "$ex" 2>err.log) || rc=$?
+            err=$(cat err.log 2>/dev/null || true); rm -f err.log
+            if [ "$rc" -ne 0 ]; then
+              printf 'FAIL %s rc=%s\nSTDOUT:\n%s\nSTDERR:\n%s\n' "$ex" "$rc" "$out" "$err"
+              return 1
+            fi
+            if [ "$out" != "$want" ]; then
+              printf 'FAIL %s\nGOT:\n%s\nWANT:\n%s\nSTDERR:\n%s\n' "$ex" "$out" "$want" "$err"
+              return 1
+            fi
+            printf 'ok %s\n' "$ex"
+          }
+          gate examples/001_hello.lum "Olá, Lumen!"
+          gate examples/002_fatorial.lum "5! = 120"
+          gate examples/003_fibonacci.lum "$(printf '0\n1\n1\n2\n3\n5\n8\n13\n21\n34')"
+          gate examples/004_match.lum "$(printf 'zero\npequeno\nnegativo\ngrande\nmédio')"
 
       - name: Testes DAP + fmt
         run: python3 -m unittest ide.vscode.test_dap tools.fmt.test_fmt
