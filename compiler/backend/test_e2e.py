@@ -207,13 +207,19 @@ class TestE2E(unittest.TestCase):
             open(os.path.join(d, "Makefile"), "w").write(gerar_makefile())
             # Windows/PE: o binário gerado é sempre <nome>.exe, então `./app`
             # não resolve (WinError 2); no POSIX o nome é `app` (sem sufixo).
+            # Alguns toolchains ignoram `-o`/sufixo: localiza o binário real
+            # entre os candidatos em vez de assumir o nome.
             exe = "app.exe" if os.name == "nt" else "app"
             r = subprocess.run(["cc", "-std=c99", "-O2", "-Wall",
                                 "-o", exe, "main.c"],
                                cwd=d, capture_output=True, text=True,
                                timeout=60)
             self.assertEqual(r.returncode, 0, r.stderr)
-            r2 = subprocess.run([os.path.join(".", exe)], cwd=d,
+            cands = [exe, "app", "app.exe", "a.out", "a.exe", "main", "main.exe"]
+            achado = next((c for c in cands
+                           if os.path.isfile(os.path.join(d, c))), None)
+            self.assertIsNotNone(achado, f"binário ausente em {d}: {os.listdir(d)}")
+            r2 = subprocess.run([os.path.join(d, achado)],
                                 capture_output=True, text=True, timeout=30)
             self.assertEqual(r2.returncode, 0, r2.stderr)
             self.assertEqual(r2.stdout.strip(), "137")
