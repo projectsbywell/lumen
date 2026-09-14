@@ -3,7 +3,22 @@
 > Histórico de versões. Formato: `lumen.toml [package] version` +
 > git tag `vX.Y.Z`. Política: semver; spec congelada por minor.
 
-## v0.4.0 — 2026-09-14 (atual, ecossistema: GC+VM, TLS/audit, DAP, site/PDF, releases)
+## v0.5.0 — 2026-09-14 (atual, runtime: Objeto+async+DAP gaps+fmt)
+
+- **P5.1 — Wrapping `Objeto`**: STORE global aloca no Heap, LOAD desembrulha
+  (igualdade preservada), 14 opcodes na borda, `envolver`/`desembrulhar` em
+  `runtime/gc.py`. Não-tracked: locais de função, temps, `entrada`, compostos.
+- **P5.2 — Async na VM**: `YIELD`/`SPAWN`/`AWAIT_FUT`/`AWAIT_CH`, coroutines
+  round-robin rastreadas no Heap, lowering no `codegen_vm.py` (AST existente).
+- **P5.3 — DAP gaps**: step por linha, eval seguro, attach, watchpoints,
+  terminate cooperativo (17 testes DAP).
+- **P5.4 — `lumen fmt`**: formatador idempotente + `lumen fmt [--check|--diff]`
+  (8 testes).
+- **Qualidade**: **576 unit + 17 boost OK**, **50/50 conformidade**.
+- Breaking: nenhum.
+- Repo: https://github.com/wellintondossantosalmeida-boop/lumen (CI + Pages + releases em tags `v*`).
+
+## v0.4.0 — 2026-09-14 (ecossistema: GC+VM, TLS/audit, DAP, site/PDF, releases)
 
 - **P1 — VM com GC**: `runtime/vm.py` wiring no `Heap` (`runtime/gc.py`):
   frames/globals registrados, GC periódico defensivo (512 opcodes),

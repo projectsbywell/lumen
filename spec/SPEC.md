@@ -1,6 +1,6 @@
 # Lumen — Especificação da Linguagem
 
-**Versão:** 0.4.0 (2026-09-14)  
+**Versão:** 0.5.0 (2026-09-14)  
 **Autores:** Lumen Lang Team  
 **Status:** Draft Normativo  
 **Licença:** MIT / Apache-2.0

@@ -1,7 +1,7 @@
 # Manifesto raiz do Lumen — v0.4.0
 [package]
 name = "lumen"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2026"
 description = "Linguagem pequena e estática: match exaustivo, 3 backends (vm/c/wasm)"
 license = "MIT"

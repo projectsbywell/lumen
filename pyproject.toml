@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lumen"
-version = "0.4.0"
+version = "0.5.0"
 description = "Linguagem pequena e estática: match exaustivo, 3 backends (vm/c/wasm), ecossistema (pkg TLS/audit, DAP, playground, releases)"
 readme = "README.md"
 requires-python = ">=3.8"

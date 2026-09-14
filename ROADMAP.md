@@ -63,7 +63,23 @@
       `tools/test/test_release.py`, `infra/releases/NOTAS_v0.4.0.md`,
       `infra/releases/SHA256SUMS.txt`.
 
+## v0.5 — Runtime async + GC total (entregue: 2026-09-14, 576+17 testes + 50/50)
+
+- [x] **Wrapping `Objeto`** (P5.1) — `runtime/gc.py` (`envolver`/`desembrulhar`),
+      STORE global aloca `Objeto`, LOAD desembrulha, 14 opcodes na borda,
+      `TestVMGCWrapping` (4). Evidência: `outputs/lumen_v05_p1_wrapping.md`.
+- [x] **Async na VM + lowering** (P5.2) — opcodes `YIELD`/`SPAWN`/`AWAIT_FUT`/
+      `AWAIT_CH`/`CALL_NATIVE`, coroutines round-robin rastreadas no Heap,
+      codegen emite `SPAWN`/`AWAIT_FUT` do AST existente, e2e imprime `777`.
+      Evidência: `outputs/lumen_v05_p2a_vm_async.md`,
+      `outputs/lumen_v05_p2b_compiler.md`.
+- [x] **DAP gaps** (P5.3) — step por linha, eval seguro (AST restrita),
+      attach, watchpoints, terminate cooperativo. DAP 12→17 OK.
+- [x] **`lumen fmt` standalone** (P5.4) — `tools/fmt/lumen_fmt.py` (512L,
+      idempotente, preserva strings/comentários), CLI `lumen fmt
+      [--check|--diff]`, 8 testes. Evidência: `tools/fmt/`.
+
 ## Ideias (sem prazo)
 
 - Self-hosting: reescrever o front-end em Lumen.
-- Backend LLVM; LSP incremental; `lumen fmt` standalone.
+- Backend LLVM; LSP incremental.

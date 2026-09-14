@@ -1,11 +1,12 @@
-# Lumen v0.4
+# Lumen v0.5
 
 Linguagem pequena e estática, com `match` exaustivo, `Result`/`Option`,
 macros higiênicas, `async`/`await` e três backends (**vm**, **c**, **wasm**).
-v0.4: ecossistema — VM com GC, pacotes com TLS/audit, debugger **DAP**,
-site + playground + livro PDF, `pyproject.toml` + **releases binárias**
-Linux/macOS/Windows (sdist + wheel + onefile).
-570 testes unit + 50/50 conformidade (ver ROADMAP).
+v0.5: runtime — heap com `Objeto` (globais envolvidos, LOAD desembrulha),
+`async` de verdade na VM (`SPAWN`/`AWAIT_FUT`/`AWAIT_CH`/`YIELD` + lowering
+no codegen), DAP por linha + eval seguro + attach + watchpoints, e
+`lumen fmt` standalone.
+576 testes unit + 17 boost + 50/50 conformidade (ver ROADMAP).
 
 ```lum
 fn main() {
