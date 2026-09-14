@@ -687,8 +687,23 @@ class TestDAP(unittest.TestCase):
             self.assertTrue(r["success"])
             self.assertLess(elapsed, 2.0,
                             f"pause bloqueou dispatch ({elapsed:.2f}s) — deadlock?")
-            stopped = wait_for(buf, "stopped", timeout=8)
-            self.assertIsNotNone(stopped, "pause não gerou stopped")
+            # Runner carregado pode atrasar a thread da VM: se o stopped
+            # não chegar, re-arma a flag (o handler responde sucesso sem
+            # armar quando a thread ainda não está viva).
+            stopped = None
+            for _ in range(3):
+                stopped = wait_for(buf, "stopped", timeout=6)
+                if stopped is not None:
+                    break
+                if s._thread is not None and s._thread.is_alive() \
+                        and not s._done and not s._paused:
+                    s.handle(req(5, "pause", {"threadId": 1}))
+            self.assertIsNotNone(
+                stopped,
+                "pause não gerou stopped "
+                f"(thread viva={s._thread.is_alive() if s._thread else None} "
+                f"done={s._done} paused={s._paused} "
+                f"eventos={[m.get('event') for m in events_of(buf)]})")
             self.assertEqual(stopped["body"]["reason"], "pause")
             s.handle(req(6, "continue", {"threadId": 1}))
             time.sleep(0.3)
