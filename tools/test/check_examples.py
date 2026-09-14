@@ -54,9 +54,13 @@ def check(paths: list[str], verbose: bool) -> tuple[int, int, list[str]]:
             if verbose:
                 print(f"[PASS] {os.path.relpath(p, ROOT)}")
         except Exception as e:  # noqa: BLE001 — smoke: qualquer erro reprova
+            # Normaliza para `/` (spec de paths do repo): no Windows
+            # `relpath` devolve `\` e a allowlist usa `/` (senão XFAIL
+            # conhecido vira FAIL inesperado só no Windows).
+            rel = os.path.relpath(p, ROOT).replace(os.sep, "/")
             fail += 1
-            errors.append(f"{os.path.relpath(p, ROOT)}: {e}")
-            print(f"[FAIL] {os.path.relpath(p, ROOT)}: {e}")
+            errors.append(f"{rel}: {e}")
+            print(f"[FAIL] {rel}: {e}")
     return ok, fail, errors
 
 
