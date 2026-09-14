@@ -1,0 +1,28 @@
+#include "lumen_rt.h"
+lumen_int lumen_fat(lumen_int v_n) {
+  lumen_int v_t2, v_t3, v_t4, v_t7, v_t8, v_t9, v_t10;
+  v_t2 = 1;
+  v_t3 = v_n <= v_t2;
+  if (v_t3) goto L1; else goto L3;
+  L1: ;
+  v_t4 = 1;
+  return v_t4;
+  goto L3;
+  L3: ;
+  v_t7 = 1;
+  v_t8 = v_n - v_t7;
+  v_t9 = lumen_fat(v_t8);
+  v_t10 = v_n * v_t9;
+  return v_t10;
+}
+lumen_int lumen_main(void) {
+  lumen_int v_t12, v_t13, v_t16, v_t17, v_t18, v_t19;
+  v_t12 = 5;
+  v_t13 = lumen_fat(v_t12);
+  v_t16 = 20;
+  v_t17 = v_t13 + v_t16;
+  v_t18 = 3;
+  v_t19 = v_t17 - v_t18;
+  return v_t19;
+}
+int main(void){ lumen_print_int(lumen_main()); return 0; }

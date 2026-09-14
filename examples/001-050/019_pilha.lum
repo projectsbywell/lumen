@@ -1,0 +1,132 @@
+/// 019 — Pilha (LIFO) com `Vec` e `struct` + `impl`.
+///
+/// Pilha segue LIFO: `empilhar` adiciona no topo, `desempilhar`
+/// remove do topo. `topo` espreita sem remover. Usa `Vec<i32>`,
+/// `Option` e `Result` para tratar pilha vazia.
+
+use std::vec;
+use std::str;
+
+/// Pilha de inteiros.
+struct Pilha {
+    dados: Vec,
+    topo_idx: i32,
+}
+
+impl Pilha {
+    /// Cria pilha vazia.
+    fn nova() -> Pilha {
+        return Pilha { dados: vec![], topo_idx: 0 };
+    }
+
+    /// Cria pilha a partir de vetor existente.
+    fn de_vec(v: Vec<i32>) -> Pilha {
+        let n = vec::len(v);
+        return Pilha { dados: v, topo_idx: n };
+    }
+
+    /// Quantidade de elementos.
+    fn tamanho(p: Pilha) -> i32 {
+        return p.topo_idx;
+    }
+
+    /// True se vazia.
+    fn vazia(p: Pilha) -> bool {
+        return p.topo_idx == 0;
+    }
+
+    /// Empilha `valor` e devolve nova pilha.
+    fn empilhar(p: Pilha, valor: i32) -> Pilha {
+        let mut novo_dados = p.dados;
+        novo_dados = vec::push(novo_dados, valor);
+        return Pilha { dados: novo_dados, topo_idx: p.topo_idx + 1 };
+    }
+
+    /// Desempilha: devolve `Some((valor, nova_pilha))` ou `None`.
+    fn desempilhar(p: Pilha) -> Option<i32> {
+        if p.topo_idx == 0 {
+            return None;
+        }
+        let idx = p.topo_idx - 1;
+        let v = match vec::get(p.dados, idx) {
+            Some(x) => x,
+            None => 0,
+        };
+        return Some(v);
+    }
+
+    /// Pilha após remover o topo.
+    fn sem_topo(p: Pilha) -> Pilha {
+        if p.topo_idx == 0 {
+            return p;
+        }
+        let mut novo = vec![];
+        let mut i: i32 = 0;
+        while i < p.topo_idx - 1 {
+            let x = match vec::get(p.dados, i) {
+                Some(v) => v,
+                None => 0,
+            };
+            novo = vec::push(novo, x);
+            i = i + 1;
+        }
+        return Pilha { dados: novo, topo_idx: p.topo_idx - 1 };
+    }
+
+    /// Espreita o topo sem remover.
+    fn topo(p: Pilha) -> Option<i32> {
+        if p.topo_idx == 0 {
+            return None;
+        }
+        return vec::get(p.dados, p.topo_idx - 1);
+    }
+}
+
+/// Desempilha com `Result` para mensagem de erro.
+fn desempilhar_ok(p: Pilha) -> Result<i32, str> {
+    return match Pilha::topo(p) {
+        Some(v) => Ok(v),
+        None => Err("pilha vazia"),
+    };
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut p = Pilha::nova();
+    p = Pilha::empilhar(p, 10);
+    p = Pilha::empilhar(p, 20);
+    p = Pilha::empilhar(p, 30);
+
+    println("tamanho = " + str::from_int(Pilha::tamanho(p)));
+    match Pilha::topo(p) {
+        Some(v) => println("topo = " + str::from_int(v)),
+        None => println("vazia"),
+    }
+
+    match Pilha::desempilhar(p) {
+        Some(v) => {
+            println("desempilhado = " + str::from_int(v));
+            let p2 = Pilha::sem_topo(p);
+            println("novo tamanho = " + str::from_int(Pilha::tamanho(p2)));
+        },
+        None => println("nada para desempilhar"),
+    }
+
+    let vazia = Pilha::nova();
+    match desempilhar_ok(vazia) {
+        Ok(v) => println(str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+}
+
+#[test]
+fn testa_pilha() {
+    let p = Pilha::nova();
+    let p = Pilha::empilhar(p, 1);
+    let p = Pilha::empilhar(p, 2);
+    assert_eq(Pilha::tamanho(p), 2);
+    assert_eq(Pilha::topo(p), Some(2));
+    let p2 = Pilha::sem_topo(p);
+    assert_eq(Pilha::topo(p2), Some(1));
+    assert_eq(Pilha::vazia(Pilha::nova()), true);
+}

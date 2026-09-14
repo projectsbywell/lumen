@@ -1,0 +1,28 @@
+/// 041 — Agenda de contatos.
+///
+/// Struct + busca linear + inserção.
+
+struct Contato {
+    nome: str,
+    fone: str,
+}
+
+/// Procura por nome; devolve o índice ou -1.
+fn buscar(agenda: vec, nome: str) -> i32 {
+    let mut i: i32 = 0;
+    while i < vec::len(agenda) {
+        if agenda[i].nome == nome {
+            return i;
+        }
+        i = i + 1;
+    }
+    return -1;
+}
+
+fn main() {
+    let mut agenda = vec![];
+    vec::push(agenda, Contato { nome: "Ana", fone: "111" });
+    vec::push(agenda, Contato { nome: "Bia", fone: "222" });
+    println(buscar(&agenda, "Bia"));
+    println(buscar(&agenda, "Cid"));
+}

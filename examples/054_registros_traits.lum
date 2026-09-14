@@ -1,0 +1,52 @@
+/// 054 — Tipos registro `{f: t}` e trait declarations da v0.3.
+///
+/// Demonstra structs com campos tipados, tipos registro anônimos
+/// como assinaturas de função, declaração de traits com métodos,
+/// e `impl` para structs.
+
+/// Struct com campos tipados.
+struct Ponto {
+    x: f64,
+    y: f64,
+}
+
+/// Trait com métodos exigidos (declaração).
+trait Area {
+    fn area(self) -> f64;
+}
+
+/// Trait com métodos exigidos para descrição.
+trait Descricao {
+    fn descricao(self) -> str;
+}
+
+/// `impl` implementa a trait para a struct.
+impl Ponto {
+    fn area(self) -> f64 { return 0.0f64; }
+}
+
+/// Função que recebe componentes e retorna registro anônimo.
+fn centro(x: f64, y: f64) -> {x: f64, y: f64} {
+    return Ponto { x: x / 2.0f64, y: y / 2.0f64 };
+}
+
+/// Construtor de Ponto.
+fn ponto_novo(x: f64, y: f64) -> Ponto {
+    return Ponto { x: x, y: y };
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let p = ponto_novo(3.0f64, 4.0f64);
+    let c = centro(10.0f64, 20.0f64);
+}
+
+#[test]
+fn testa_centro() {
+    let r = centro(10.0f64, 20.0f64);
+}
+
+#[test]
+fn testa_ponto_novo() {
+    let p = ponto_novo(3.0f64, 4.0f64);
+}

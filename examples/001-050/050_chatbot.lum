@@ -1,0 +1,88 @@
+/// 50 — Chatbot com `match` de padrões e strings.
+///
+/// O chatbot reconhece intenções do usuário através de
+/// `match` em padrões de string e responde adequadamente.
+/// Usa `for`, `if-else` e `Result` para fluxo de conversa.
+
+use std::str;
+
+/// Intenção reconhecida pelo chatbot.
+enum Intencao {
+    Saudacao,
+    Ajuda,
+    Despedida,
+    Desconhecida,
+}
+
+/// Reconhece a intenção a partir do texto de entrada.
+fn reconhecer(texto: str) -> Intencao {
+    let lower = str::lower(texto);
+    return match lower {
+        "olá" => Intencao::Saudacao,
+        "oi" => Intencao::Saudacao,
+        "bom dia" => Intencao::Saudacao,
+        "ajuda" => Intencao::Ajuda,
+        "help" => Intencao::Ajuda,
+        "adeus" => Intencao::Despedida,
+        "tchau" => Intencao::Despedida,
+        _ => Intencao::Desconhecida,
+    };
+}
+
+/// Gera resposta baseada na intenção reconhecida.
+fn responder(intencao: Intencao) -> str {
+    return match intencao {
+        Intencao::Saudacao => "Olá! Como posso ajudar?",
+        Intencao::Ajuda => "Estou aqui para ajudar. Digite 'ajuda' para mais opções.",
+        Intencao::Despedida => "Até logo! Volte sempre.",
+        Intencao::Desconhecida => "Desculpe, não entendi. Tente 'olá' ou 'ajuda'.",
+    };
+}
+
+/// Processa uma frase inteira: reconhece e responde.
+fn processar(frase: str) -> str {
+    let intencao = reconhecer(frase);
+    return responder(intencao);
+}
+
+/// Executa uma sessão de chat com múltiplas mensagens.
+fn sessao(mensagens: Vec<str>) -> Vec<str> {
+    let mut respostas = vec![];
+    let mut i: i32 = 0;
+    let n = vec::len(mensagens);
+    while i < n {
+        let msg = vec::get(mensagens, i);
+        match msg {
+            Some(m) => {
+                respostas = vec::push(respostas, processar(m));
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return respostas;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let entrada = vec!["olá", "ajuda", "tchau", "como vai?"];
+    let saidas = sessao(entrada);
+
+    let mut i: i32 = 0;
+    while i < vec::len(saidas) {
+        let r = vec::get(saidas, i);
+        match r {
+            Some(resp) => println(resp),
+            None => {},
+        }
+        i = i + 1;
+    }
+}
+
+#[test]
+fn testa_chatbot() {
+    assert_eq(processar("olá"), "Olá! Como posso ajudar?");
+    assert_eq(processar("ajuda"), "Estou aqui para ajudar. Digite 'ajuda' para mais opções.");
+    assert_eq(processar("tchau"), "Até logo! Volte sempre.");
+    assert_eq(processar("xyz"), "Desculpe, não entendi. Tente 'olá' ou 'ajuda'.");
+}

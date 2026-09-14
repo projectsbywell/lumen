@@ -1,0 +1,102 @@
+<!-- FONTE ÚNICA: infra/site/index.html (v0.4). infra/site_index.html é espelho gerado — não edite o espelho, edite este arquivo e copie por cima. -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen v0.4 — linguagem pequena, match exaustivo, 3 backends</title>
+<style>
+  :root { --bg:#0d1117; --fg:#e6edf3; --acc:#ffd866; --card:#161b22; --mut:#8b949e; }
+  * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--fg);
+    font:16px/1.6 system-ui,sans-serif; }
+  header, main, footer { max-width:880px; margin:auto; padding:24px; }
+  nav a { color:var(--acc); margin-right:16px; text-decoration:none; }
+  .hero { padding:48px 24px; text-align:center; }
+  .hero h1 { font-size:3rem; margin:0; } .hero h1 span { color:var(--acc); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid #30363d; border-radius:12px; padding:16px; }
+  pre { background:#010409; border:1px solid #30363d; border-radius:12px; padding:16px;
+    overflow-x:auto; } code { color:var(--acc); }
+  .btn { display:inline-block; background:var(--acc); color:#111; font-weight:700;
+    padding:10px 20px; border-radius:999px; text-decoration:none; margin:4px; }
+  .btn.ghost { background:transparent; color:var(--acc); border:1px solid var(--acc); }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:12px; }
+  .badge { background:var(--card); border:1px solid #30363d; border-radius:999px;
+    padding:4px 12px; font-size:.85rem; } .badge b { color:var(--acc); }
+  footer { color:var(--mut); font-size:.9rem; text-align:center; }
+  ul.tree { columns:2; font-size:.92rem; } ul.tree code { font-size:.85rem; }
+</style>
+</head>
+<body>
+<header><nav>
+  <a href="#inicio">Início</a><a href="#exemplo">Exemplo</a>
+  <a href="#docs">Docs</a><a href="#conf">Conformidade</a>
+  <a href="playground/">Playground</a><a href="LIVRO.pdf">Livro (PDF)</a>
+</nav></header>
+<main>
+<section class="hero" id="inicio">
+  <h1>Lumen<span>.</span></h1>
+  <p>Linguagem pequena e estática, com <code>match</code> exaustivo,
+  <code>Result</code>/<code>Option</code> e três backends: <b>VM</b>, <b>C</b> e <b>WASM</b>.</p>
+  <a class="btn" href="#exemplo">Ver exemplo</a>
+  <a class="btn" href="playground/">Abrir playground</a>
+  <a class="btn ghost" href="#docs">Ler docs</a>
+  <a class="btn ghost" href="LIVRO.pdf">Baixar LIVRO.pdf</a>
+  <div class="badges">
+    <span class="badge">conformance <b>50/50</b></span>
+    <span class="badge">playground <b>8 testes</b></span>
+    <span class="badge">Lumen <b>v0.4</b></span>
+  </div>
+</section>
+<section id="exemplo"><h2>Em 30 segundos</h2>
+<pre><code>/// Fatorial com Result.
+fn fat(n: i32) -&gt; Result&lt;i32, str&gt; {
+    if n &lt; 0 { return Err("n negativo"); }
+    if n &lt;= 1 { return Ok(1); }
+    return Ok(n * fat(n - 1)?);
+}
+
+fn main() {
+    match fat(5) {
+        Ok(v) =&gt; println("5! = " + str::from_int(v)),
+        Err(e) =&gt; println("erro: " + e),
+    }
+}</code></pre>
+<pre><code>$ lumen run examples/002_fatorial.lum
+5! = 120</code></pre>
+<p>Teste no navegador: <a href="playground/">playground/</a> (share via <code>#c=&lt;base64&gt;</code>, WASM opt-in com fallback JS).</p>
+</section>
+<section id="docs"><h2>Docs</h2>
+<div class="grid">
+  <div class="card"><h3>API da stdlib</h3><p>Referência gerada por <code>docs/gen.py</code> a partir dos <code>///</code>.</p></div>
+  <div class="card"><h3>20 tutoriais + 50 exemplos</h3><p>Do hello ao projeto completo em ~20h (docs/TUTORIAIS.md).</p></div>
+  <div class="card"><h3>O Livro</h3><p>13 capítulos, do essencial aos backends C/WASM. <a href="LIVRO.pdf">LIVRO.pdf</a> gerado por <code>docs/pdf.py</code> (obrigatório no CI).</p></div>
+  <div class="card"><h3>Playground</h3><p><a href="playground/">playground/</a> — interpretador JS mínimo + WASM opt-in (<code>ide/playground/</code> no repo).</p></div>
+</div></section>
+<section id="conf"><h2>Conformidade 100%</h2>
+<p>Toda feature da spec vira caso executável:</p>
+<pre><code>$ python3 conformance/suite.py
+[PASS] MAT-01 (match) literal
+...
+50/50 casos passando (100%).
+Relatório: conformance/conformance_report.json</code></pre>
+<p>Playground: <code>python3 -m unittest ide.playground.test_playground</code> — 8 testes (share-roundtrip b64, fallback sem WASM, sintaxe JS).</p>
+</section>
+<section id="mapa"><h2>O que há em cada pasta</h2>
+<ul class="tree">
+  <li><code>compiler/</code> — front + backends VM/C/WASM</li>
+  <li><code>runtime/</code> — VM e runtime WASM (<code>runtime.js</code>)</li>
+  <li><code>stdlib/</code> — biblioteca padrão</li>
+  <li><code>conformance/</code> — suíte 50/50 + relatório</li>
+  <li><code>docs/</code> — <code>gen.py</code>, <code>pdf.py</code>, API/TUTORIAIS</li>
+  <li><code>examples/</code> — 50 exemplos, tutoriais, <code>book/LIVRO.pdf</code></li>
+  <li><code>ide/playground/</code> — playground web (esta página em <code>playground/</code>)</li>
+  <li><code>ide/lsp, ide/vscode/</code> — LSP/DAP</li>
+  <li><code>infra/site/</code> — este site (fonte única desta página)</li>
+  <li><code>tools/</code> — pkg, build, test-runner</li>
+</ul>
+</section>
+</main>
+<footer>Lumen v0.4 · MIT · docs geradas de comentários <code>///</code></footer>
+</body>
+</html>

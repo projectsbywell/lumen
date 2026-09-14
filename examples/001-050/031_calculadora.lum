@@ -1,0 +1,21 @@
+/// 031 — Calculadora com `match`.
+///
+/// Despacha a operação por string e trata divisão por zero.
+
+/// Calcula `a op b` ou devolve `Err`.
+fn calcula(a: f64, op: str, b: f64) -> Result<f64, str> {
+    return match op {
+        "+" => Ok(a + b),
+        "-" => Ok(a - b),
+        "*" => Ok(a * b),
+        "/" => if b == 0.0 { Err("divisão por zero") } else { Ok(a / b) },
+        _ => Err("operação desconhecida"),
+    };
+}
+
+fn main() {
+    match calcula(10.0, "/", 4.0) {
+        Ok(v) => println(v),
+        Err(e) => println(e),
+    }
+}

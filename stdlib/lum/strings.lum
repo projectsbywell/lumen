@@ -1,0 +1,99 @@
+# Lumen Standard Library — String Module (Reference .lum)
+# This is the Lumen language reference implementation for the strings module.
+# It mirrors the Python API in pylumen/strings.py
+
+module strings
+
+  # Returns the length of a string.
+  fun strlen(s: String): Int
+    return s.len()
+
+  # Returns a substring from start to end (exclusive).
+  fun sub(s: String, start: Int, end: Int?): String
+    if end == nil
+      return s.slice(start)
+    return s.slice(start, end)
+
+  # Concatenates multiple strings.
+  fun concat(...parts: String): String
+    return "".join(parts)
+
+  # Returns character at position.
+  fun index(s: String, pos: Int): String
+    return s[pos]
+
+  # Lexicographic comparison. Returns -1, 0, or 1.
+  fun compare(a: String, b: String): Int
+    if a < b then return -1
+    if a > b then return 1
+    return 0
+
+  # Convert to uppercase.
+  fun to_upper(s: String): String
+    return s.upper()
+
+  # Convert to lowercase.
+  fun to_lower(s: String): String
+    return s.lower()
+
+  # Convert to title case.
+  fun to_title(s: String): String
+    return s.title()
+
+  # Strip whitespace/characters from both ends.
+  fun strip(s: String, chars: String?): String
+    return s.strip(chars)
+
+  # Trim whitespace from left.
+  fun trim(s: String, chars: String?): String
+    return s.lstrip(chars)
+
+  # Replace occurrences of old with new.
+  fun replace(s: String, old: String, new: String, count: Int?): String
+    if count == nil then return s.replace(old, new)
+    return s.replace(old, new, count)
+
+  # Split string by separator.
+  fun split(s: String, sep: String?, maxsplit: Int?): List<String>
+    if maxsplit == nil then return s.split(sep)
+    return s.split(sep, maxsplit)
+
+  # Join list of strings with separator.
+  fun join(parts: List<String>, sep: String): String
+    return sep.join(parts)
+
+  # Check if pattern matches string.
+  fun matches(s: String, pattern: String): Bool
+    return Regex.search(pattern, s) != nil
+
+  # Find substring position, -1 if not found.
+  fun find(s: String, sub: String, start: Int): Int
+    return s.find(sub, start)
+
+  # Count occurrences of substring.
+  fun count(s: String, sub: String): Int
+    return s.count(sub)
+
+  # Format string with args.
+  fun format(template: String, ...args: Any, ...kwargs: Any): String
+    return template.format(args..., kwargs...)
+
+  # Compile a regex pattern.
+  fun regex_compile(pattern: String): Regex
+    return Regex(pattern)
+
+  # Match pattern against string.
+  fun regex_match(pattern: String, s: String): Match?
+    return Regex.match(pattern, s)
+
+  # Search pattern in string.
+  fun regex_search(pattern: String, s: String): Match?
+    return Regex.search(pattern, s)
+
+  # Find all matches.
+  fun regex_findall(pattern: String, s: String): List<String>
+    return Regex.findall(pattern, s)
+
+  # Substitute pattern matches.
+  fun regex_sub(pattern: String, repl: String, s: String, count: Int): String
+    return Regex.sub(pattern, repl, s, count)

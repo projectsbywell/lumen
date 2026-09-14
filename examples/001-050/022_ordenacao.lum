@@ -1,0 +1,174 @@
+/// 022 — Ordenação comparativa: quicksort e insertion sort.
+///
+/// Mostra dois algoritmos sobre `Vec<i32>`: `quicksort` recursivo
+/// e `insertion_sort` iterativo. Usa `match`, `if-else`, `while`
+/// e `vec::push`/`vec::get`/`vec::len`.
+
+use std::vec;
+use std::str;
+
+/// Concatena dois vetores.
+fn concat(a: Vec<i32>, b: Vec<i32>) -> Vec<i32> {
+    let mut res = vec![];
+    let mut i: i32 = 0;
+    let n = vec::len(a);
+    while i < n {
+        let x = match vec::get(a, i) {
+            Some(v) => v,
+            None => 0,
+        };
+        res = vec::push(res, x);
+        i = i + 1;
+    }
+    let mut j: i32 = 0;
+    let m = vec::len(b);
+    while j < m {
+        let x = match vec::get(b, j) {
+            Some(v) => v,
+            None => 0,
+        };
+        res = vec::push(res, x);
+        j = j + 1;
+    }
+    return res;
+}
+
+/// Quicksort funcional: escolhe pivô e particiona.
+fn quicksort(v: Vec<i32>) -> Vec<i32> {
+    let n = vec::len(v);
+    if n <= 1 {
+        return v;
+    }
+    let pivo = match vec::get(v, 0) {
+        Some(x) => x,
+        None => 0,
+    };
+    let mut menores = vec![];
+    let mut iguais = vec![];
+    let mut maiores = vec![];
+    let mut i: i32 = 0;
+    while i < n {
+        let x = match vec::get(v, i) {
+            Some(val) => val,
+            None => 0,
+        };
+        if x < pivo {
+            menores = vec::push(menores, x);
+        } else {
+            if x > pivo {
+                maiores = vec::push(maiores, x);
+            } else {
+                iguais = vec::push(iguais, x);
+            }
+        }
+        i = i + 1;
+    }
+    let ord_menores = quicksort(menores);
+    let ord_maiores = quicksort(maiores);
+    let tmp = concat(ord_menores, iguais);
+    return concat(tmp, ord_maiores);
+}
+
+/// Insere `valor` em vetor já ordenado.
+fn inserir_ordenado(v: Vec<i32>, valor: i32) -> Vec<i32> {
+    let n = vec::len(v);
+    if n == 0 {
+        return vec![valor];
+    }
+    let mut res = vec![];
+    let mut inserido: bool = false;
+    let mut i: i32 = 0;
+    while i < n {
+        let x = match vec::get(v, i) {
+            Some(val) => val,
+            None => 0,
+        };
+        if inserido == false {
+            if valor <= x {
+                res = vec::push(res, valor);
+                inserido = true;
+            }
+        }
+        res = vec::push(res, x);
+        i = i + 1;
+    }
+    if inserido == false {
+        res = vec::push(res, valor);
+    }
+    return res;
+}
+
+/// Insertion sort iterativo.
+fn insertion_sort(v: Vec<i32>) -> Vec<i32> {
+    let n = vec::len(v);
+    let mut res = vec![];
+    let mut i: i32 = 0;
+    while i < n {
+        let x = match vec::get(v, i) {
+            Some(val) => val,
+            None => 0,
+        };
+        res = inserir_ordenado(res, x);
+        i = i + 1;
+    }
+    return res;
+}
+
+/// Verifica ordenação.
+fn ordenado(v: Vec<i32>) -> bool {
+    let n = vec::len(v);
+    if n <= 1 {
+        return true;
+    }
+    let mut i: i32 = 0;
+    while i < n - 1 {
+        let a = match vec::get(v, i) {
+            Some(x) => x,
+            None => 0,
+        };
+        let b = match vec::get(v, i + 1) {
+            Some(x) => x,
+            None => 0,
+        };
+        if a > b {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let nums = vec![9, 4, 6, 2, 8, 1, 5];
+
+    let q = quicksort(&nums);
+    println("quicksort ordenado? " + str::from_int(if ordenado(&q) { 1 } else { 0 }));
+    let mut i: i32 = 0;
+    while i < vec::len(q) {
+        match vec::get(q, i) {
+            Some(v) => println(str::from_int(v)),
+            None => {},
+        }
+        i = i + 1;
+    }
+
+    let ins = insertion_sort(&nums);
+    println("insertion ordenado? " + str::from_int(if ordenado(&ins) { 1 } else { 0 }));
+    let mut j: i32 = 0;
+    while j < vec::len(ins) {
+        match vec::get(ins, j) {
+            Some(v) => println(str::from_int(v)),
+            None => {},
+        }
+        j = j + 1;
+    }
+}
+
+#[test]
+fn testa_ordenacao() {
+    assert_eq(quicksort(vec![3, 1, 2]), vec![1, 2, 3]);
+    assert_eq(insertion_sort(vec![3, 1, 2]), vec![1, 2, 3]);
+    assert_eq(quicksort(vec![]), vec![]);
+    assert_eq(insertion_sort(vec![5, 5, 5]), vec![5, 5, 5]);
+}

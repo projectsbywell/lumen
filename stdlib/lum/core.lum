@@ -1,0 +1,151 @@
+# Lumen Standard Library — Core Module (Reference .lum)
+# Mirrors the Python API in pylumen/core.py
+
+module core
+
+  # Enum of all Lumen types.
+  enum LumenType
+    Nil
+    Int
+    Float
+    Bool
+    String
+    List
+    Map
+    Set
+    Tuple
+    Function
+    Custom
+
+  # Singleton nil type.
+  type LumenNil
+    singleton
+
+    fun __eq__(other: Any): Bool
+      return isinstance(other, LumenNil) or other is nil
+
+    fun repr(): String
+      return "nil"
+
+  # String subclass with Lumen methods.
+  type LumenString extends String
+    fun to_upper(): String
+      return self.upper()
+
+    fun to_lower(): String
+      return self.lower()
+
+    fun strip(): String
+      return self.strip()
+
+    fun split(sep: String?): List<String>
+      return self.split(sep)
+
+    fun replace(old: String, new: String): String
+      return self.replace(old, new)
+
+    fun find(sub: String, start: Int = 0, end: Int?): Int
+      if end == nil then return self.find(sub, start)
+      return self.find(sub, start, end)
+
+    fun matches(pattern: String): Bool
+      return Regex.search(pattern, self) != nil
+
+  # Int subclass with Lumen methods.
+  type LumenInt extends Int
+    fun to_float(): Float
+      return float(self)
+
+    fun to_str(): String
+      return str(self)
+
+    fun abs(): Int
+      return abs(self)
+
+    fun mod(other: Int): Int
+      return self % other
+
+    fun pow(exp: Int): Int
+      return self ** exp
+
+  # Float subclass with Lumen methods.
+  type LumenFloat extends Float
+    fun to_int(): Int
+      return int(self)
+
+    fun to_str(): String
+      return str(self)
+
+    fun round(ndigits: Int = 0): Float
+      return round(self, ndigits)
+
+    fun sqrt(): Float
+      return math.sqrt(self)
+
+  # Bool subclass with Lumen methods.
+  type LumenBool extends Bool
+    fun to_int(): Int
+      return 1 if self else 0
+
+    fun to_str(): String
+      return "true" if self else "false"
+
+  # Return the LumenType of a value.
+  fun ltype_of(value: Any): LumenType
+    if value is nil then return LumenType.Nil
+    if isinstance(value, Bool) then return LumenType.Bool
+    if isinstance(value, Int) and not isinstance(value, Bool) then return LumenType.Int
+    if isinstance(value, Float) then return LumenType.Float
+    if isinstance(value, String) then return LumenType.String
+    if isinstance(value, List) then return LumenType.List
+    if isinstance(value, Dict) then return LumenType.Map
+    if isinstance(value, Set) then return LumenType.Set
+    if isinstance(value, Tuple) then return LumenType.Tuple
+    if callable(value) then return LumenType.Function
+    return LumenType.Custom
+
+  # Return the name string of the LumenType.
+  fun ltype_name(value: Any): String
+    return ltype_of(value).to_string()
+
+  # Convert value to target LumenType.
+  fun lconvert(value: Any, target_type: LumenType): Any
+    match target_type
+      LumenType.Int -> return int(value)
+      LumenType.Float -> return float(value)
+      LumenType.String -> return str(value)
+      LumenType.Bool -> return bool(value)
+      LumenType.List -> return list(value)
+      LumenType.Map -> return dict(value)
+      LumenType.Set -> return set(value)
+      _ -> return value
+
+  # Convert to int.
+  fun lto_int(value: Any): Int
+    return lconvert(value, LumenType.Int)
+
+  # Convert to float.
+  fun lto_float(value: Any): Float
+    return lconvert(value, LumenType.Float)
+
+  # Convert to string.
+  fun lto_str(value: Any): String
+    return lconvert(value, LumenType.String)
+
+  # Convert to bool.
+  fun lto_bool(value: Any): Bool
+    return lconvert(value, LumenType.Bool)
+
+  # Check if value is nil.
+  fun lis_nil(value: Any): Bool
+    return value is nil or isinstance(value, LumenNil)
+
+  # Check if value is of given LumenType.
+  fun lis_type(value: Any, ttype: LumenType): Bool
+    return ltype_of(value) == ttype
+
+  # Assert value is of given type.
+  fun lassert_type(value: Any, ttype: LumenType): Bool
+    if not lis_type(value, ttype)
+      raise TypeError(f"Expected {ttype}, got {ltype_name(value)}")
+    return true

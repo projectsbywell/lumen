@@ -1,0 +1,294 @@
+/// Biblioteca padrão do Lumen — superfície documentada v0.1.
+///
+/// Este arquivo é a **fonte de documentação** da stdlib: cada item aqui
+/// descreve uma função, tipo ou módulo real de `stdlib/` com a mesma
+/// assinatura. `docs/API.md` é gerado a partir daqui com:
+///
+/// ```sh
+/// python3 docs/gen.py --src docs/stdlib_api.lum --merge docs/API.md
+/// ```
+///
+/// Quando `stdlib/` estiver populada, regenere com `--src stdlib`.
+///
+/// Convenções usadas em todas as assinaturas:
+/// - `str` é texto UTF-8 imutável; `String` é o dono mutável.
+/// - `Result<T, E>` é `Ok(valor)` ou `Err(erro)`; `?` propaga o `Err`.
+/// - `Option<T>` é `Some(valor)` ou `None`.
+
+/// Módulo `std::io` — entrada e saída no console.
+mod io {
+    /// Imprime `text` seguido de `\n` na saída padrão.
+    ///
+    /// Exemplo:
+    /// ```lum
+    /// use std::io;
+    /// fn main() { io::println("olá"); }
+    /// ```
+    pub fn println(text: str) { }
+
+    /// Imprime `text` sem nova linha final.
+    pub fn print(text: str) { }
+
+    /// Lê uma linha da entrada padrão (sem o `\n`). Retorna `Err` em EOF.
+    pub fn read_line() -> Result<String, str> { }
+
+    /// Lê todos os argumentos da linha de comando, incluindo o programa.
+    pub fn args() -> Vec<String> { }
+}
+
+/// Módulo `std::str` — utilidades de texto UTF-8.
+mod str {
+    /// Número de caracteres (não bytes) de `s`.
+    pub fn len(s: str) -> i32 { }
+
+    /// Devolve `s` em maiúsculas.
+    pub fn upper(s: str) -> String { }
+
+    /// Devolve `s` em minúsculas.
+    pub fn lower(s: str) -> String { }
+
+    /// Divide `s` pelo separador `sep`.
+    pub fn split(s: str, sep: str) -> Vec<String> { }
+
+    /// Junta `partes` com `sep` entre elas.
+    pub fn join(partes: Vec<str>, sep: str) -> String { }
+
+    /// Remove espaços no início e no fim.
+    pub fn trim(s: str) -> String { }
+
+    /// Converte `s` em `i32`. Retorna `Err` se não for número.
+    pub fn to_int(s: str) -> Result<i32, str> { }
+
+    /// Converte `n` em `String` decimal.
+    pub fn from_int(n: i32) -> String { }
+
+    /// Converte `x` em `String` (`Display`, sem precisão fixa).
+    pub fn from_float(x: f64) -> String { }
+}
+
+/// Módulo `std::vec` — vetores dinâmicos `Vec<T>`.
+mod vec {
+    /// Cria um vetor vazio.
+    pub fn novo<T>() -> Vec<T> { }
+
+    /// Número de elementos.
+    pub fn len<T>(v: Vec<T>) -> i32 { }
+
+    /// Adiciona `x` ao final (requer `mut`).
+    pub fn push<T>(v: mut Vec<T>, x: T) { }
+
+    /// Remove e retorna o último elemento, ou `None` se vazio.
+    pub fn pop<T>(v: mut Vec<T>) -> Option<T> { }
+
+    /// Aplica `f` a cada elemento e devolve o novo vetor.
+    pub fn map<T, U>(v: Vec<T>, f: fn(T) -> U) -> Vec<U> { }
+
+    /// Mantém só os elementos onde `f` retorna `true`.
+    pub fn filter<T>(v: Vec<T>, f: fn(T) -> bool) -> Vec<T> { }
+}
+
+/// Módulo `std::map` — mapas `Map<K, V>`.
+mod map {
+    /// Cria um mapa vazio.
+    pub fn novo<K, V>() -> Map<K, V> { }
+
+    /// Insere `chave -> valor` (substitui se existir).
+    pub fn insert<K, V>(m: mut Map<K, V>, chave: K, valor: V) { }
+
+    /// Busca `chave`. Retorna `Some(valor)` ou `None`.
+    pub fn get<K, V>(m: Map<K, V>, chave: K) -> Option<V> { }
+
+    /// `true` se `chave` existe no mapa.
+    pub fn has<K, V>(m: Map<K, V>, chave: K) -> bool { }
+
+    /// Remove `chave` e retorna o valor, ou `None`.
+    pub fn remove<K, V>(m: mut Map<K, V>, chave: K) -> Option<V> { }
+}
+
+/// Módulo `std::math` — matemática básica.
+mod math {
+    /// Raiz quadrada. `Err` para valores negativos.
+    pub fn sqrt(x: f64) -> Result<f64, str> { }
+
+    /// `base` elevado a `exp`.
+    pub fn pow(base: f64, exp: f64) -> f64 { }
+
+    /// Fatorial de `n` (`n!`). `Err` para `n < 0`.
+    pub fn fat(n: i32) -> Result<i32, str> { }
+
+    /// Valor absoluto.
+    pub fn abs(x: f64) -> f64 { }
+
+    /// Menor dos dois valores.
+    pub fn min(a: f64, b: f64) -> f64 { }
+
+    /// Maior dos dois valores.
+    pub fn max(a: f64, b: f64) -> f64 { }
+
+    /// Resto da divisão que funciona para negativos.
+    pub fn mdiv(a: i32, b: i32) -> i32 { }
+
+    /// Constante π.
+    pub const PI: f64 = 3.141592653589793;
+}
+
+/// Módulo `std::fs` — arquivos.
+mod fs {
+    /// Lê o arquivo inteiro como texto.
+    pub fn read_arquivo(caminho: str) -> Result<String, str> { }
+
+    /// Escreve `conteudo` no arquivo (cria ou trunca).
+    pub fn write_arquivo(caminho: str, conteudo: str) -> Result<(), str> { }
+
+    /// `true` se o caminho existe.
+    pub fn existe(caminho: str) -> bool { }
+}
+
+/// Módulo `std::http` — cliente HTTP mínimo.
+mod http {
+    /// Resposta de uma requisição.
+    pub struct Resposta { status: i32, corpo: String }
+
+    /// Faz GET em `url`. `Err` em falha de rede.
+    pub fn get(url: str) -> Result<Resposta, str> { }
+
+    /// Faz POST de `corpo` em `url`.
+    pub fn post(url: str, corpo: str) -> Result<Resposta, str> { }
+}
+
+/// Módulo `std::json` — JSON.
+mod json {
+    /// Serializa `v` para texto JSON.
+    pub fn stringify<T>(v: T) -> String { }
+
+    /// Faz parse de `s`. `Err` se o JSON for inválido.
+    pub fn parse(s: str) -> Result<Json, str> { }
+
+    /// Valor JSON dinâmico (`Null | Bool | Num | Str | Arr | Obj`).
+    pub enum Json { Null, Bool(bool), Num(f64), Str(String), Arr(Vec<Json>), Obj(Map<String, Json>) }
+}
+
+/// Módulo `std::sqlite` — SQLite embarcado.
+mod sqlite {
+    /// Conexão aberta com `caminho` (`":memory:"` = banco em RAM).
+    pub fn abrir(caminho: str) -> Result<Db, str> { }
+
+    /// Handle de banco de dados.
+    pub struct Db { caminho: String }
+
+    /// Executa SQL sem retorno (CREATE/INSERT/...). Retorna linhas afetadas.
+    pub fn exec(db: mut Db, sql: str) -> Result<i32, str> { }
+
+    /// Executa SELECT e devolve linhas como `Vec<Map<String, String>>`.
+    pub fn query(db: Db, sql: str) -> Result<Vec<Map<String, String>>, str> { }
+}
+
+/// Módulo `std::test` — asserções para `#[test]`.
+mod test {
+    /// Falha com `msg` se `cond` for `false`.
+    pub fn assert(cond: bool, msg: str) { }
+
+    /// Falha se `a != b`.
+    pub fn assert_eq<T>(a: T, b: T) { }
+
+    /// Falha se `a == b`.
+    pub fn assert_ne<T>(a: T, b: T) { }
+}
+
+/// Módulo `std::async` — concorrência com `async`/`await`.
+mod async {
+    /// Agenda `futuro` para execução concorrente e retorna o handle.
+    pub fn spawn<T>(futuro: Future<T>) -> Handle<T> { }
+
+    /// Bloqueia até o handle resolver e devolve o valor.
+    pub fn aguardar<T>(h: Handle<T>) -> T { }
+
+    /// Dorme `ms` milissegundos sem bloquear o executor.
+    pub async fn dormir(ms: i32) { }
+}
+
+/// Módulo `std::env` — ambiente do processo.
+mod env {
+    /// Valor da variável `nome`, ou `None`.
+    pub fn var(nome: str) -> Option<String> { }
+
+    /// Diretório de trabalho atual.
+    pub fn cwd() -> Result<String, str> { }
+}
+
+/// Módulo `std::time` — relógio.
+mod time {
+    /// Segundos desde o epoch Unix (UTC).
+    pub fn agora() -> i64 { }
+
+    /// Milissegundos desde um instante arbitrário (para medir duração).
+    pub fn millis() -> i64 { }
+}
+
+/// Módulo `std::result` — `Result<T, E>`, `Option<T>`, `?` e `panic`.
+mod result {
+    /// Erro irrecuperável lançado por `panic`.
+    pub struct LumenPanic { msg: String }
+
+    /// Aborta com erro irrecuperável `msg`.
+    pub fn panic(msg: str) { }
+
+    /// `Some(valor)` ou `None` — presença ou ausência de valor.
+    pub enum Option<T> { Some(T), None }
+
+    /// `true` se a opção contém valor.
+    pub fn is_some<T>(o: Option<T>) -> bool { }
+
+    /// `true` se a opção está vazia.
+    pub fn is_none<T>(o: Option<T>) -> bool { }
+
+    /// Desembrulha ou aborta com `panic` em `None`.
+    pub fn unwrap<T>(o: Option<T>) -> T { }
+
+    /// Desembrulha ou devolve `padrao`.
+    pub fn unwrap_or<T>(o: Option<T>, padrao: T) -> T { }
+
+    /// `Ok(valor)` ou `Err(erro)` — sucesso ou erro recuperável.
+    pub enum Result<T, E> { Ok(T), Err(E) }
+
+    /// `true` se é `Ok`.
+    pub fn is_ok<T, E>(r: Result<T, E>) -> bool { }
+
+    /// `true` se é `Err`.
+    pub fn is_err<T, E>(r: Result<T, E>) -> bool { }
+
+    /// Operador `?`: desembrulha `Ok` ou propaga `Err` ao chamador.
+    pub fn q<T, E>(r: Result<T, E>) -> T { }
+}
+
+/// Módulo `std::yaml` — YAML (subconjunto: mapas em bloco, sequências
+/// `-`, coleções inline `[a, b]` / `{k: v}`, escalares e `#` comentários).
+mod yaml {
+    /// Faz parse de `s`. Retorna o objeto (`Map`, `Vec`, escalar ou nil).
+    pub fn parse(s: str) -> Result<Any, str> { }
+
+    /// Serializa `v` para texto YAML.
+    pub fn stringify<T>(v: T) -> String { }
+
+    /// Lê e faz parse do arquivo `caminho`.
+    pub fn read_arquivo(caminho: str) -> Result<Any, str> { }
+
+    /// Serializa `v` e escreve no arquivo `caminho`.
+    pub fn write_arquivo<T>(caminho: str, v: T) -> Result<(), str> { }
+}
+
+/// Módulo `std::toml` — TOML (subconjunto: pares chave/valor, `[table]`,
+/// `[a.b]`, `[[array-table]]`, arrays multilinha, `{k = v}` inline).
+mod toml {
+    /// Faz parse de `s`. Retorna a tabela raiz.
+    pub fn parse(s: str) -> Result<Map<String, Any>, str> { }
+
+    /// Serializa a tabela `v` para texto TOML.
+    pub fn stringify(v: Map<String, Any>) -> String { }
+
+    /// Lê e faz parse do arquivo `caminho`.
+    pub fn read_arquivo(caminho: str) -> Result<Map<String, Any>, str> { }
+
+    /// Serializa `v` e escreve no arquivo `caminho`.
+    pub fn write_arquivo(caminho: str, v: Map<String, Any>) -> Result<(), str> { }
+}

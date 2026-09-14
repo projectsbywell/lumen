@@ -1,0 +1,101 @@
+/// 037 — Cache: armazenamento em mapa com expiração.
+///
+/// Um cache simples que guarda valores com tempo de vida (TTL).
+/// `cache_novo` cria; `cache_put` insere; `cache_get` busca;
+/// `cache_limpar` remove expirados.
+
+use std::vec;
+use std::map;
+
+/// Entrada do cache: valor + tempo de expiração.
+struct EntradaCache { valor: str, expira_em: i32 }
+
+/// Cache chave=valor com expiração por.tick.
+struct Cache {
+    dados: Map,
+    tick_atual: i32,
+}
+
+/// Cria um cache vazio.
+fn cache_novo() -> Cache {
+    return Cache { dados: map!{}, tick_atual: 0 };
+}
+
+/// Avança o relógio interno do cache.
+fn avanca_relogio(c: mut Cache, delta: i32) {
+    c.tick_atual = c.tick_atual + delta;
+}
+
+/// Insere um valor com TTL (em ticks).
+fn cache_put(c: mut Cache, chave: str, valor: str, ttl: i32) {
+    let entrada = EntradaCache { valor: valor, expira_em: c.tick_atual + ttl };
+    map::insert(c.dados, chave, entrada);
+}
+
+/// Busca um valor; retorna None se ausente ou expirado.
+fn cache_get(c: Cache, chave: str) -> Option {
+    match map::get(c.dados, chave) {
+        Some(e) => {
+            if e.expira_em > c.tick_atual {
+                return Some(e.valor);
+            }
+            return None;
+        },
+        None => return None,
+    }
+}
+
+/// Remove entradas expiradas e devolve quantas sobraram.
+fn cache_limpar(c: mut Cache) -> i32 {
+    let chaves = map::keys(c.dados);
+    let mut i = 0;
+    let mut sobram = 0;
+    while i < vec::len(chaves) {
+        let k = vec::get(chaves, i);
+        match map::get(c.dados, k) {
+            Some(e) => {
+                if e.expira_em <= c.tick_atual {
+                    map::remove(c.dados, k);
+                } else {
+                    sobram = sobram + 1;
+                }
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return sobram;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut c = cache_novo();
+    cache_put(&c, "u", "usuarios", 5);
+    cache_put(&c, "s", "sessoes", 2);
+    match cache_get(&c, "u") {
+        Some(v) => println("u = " + v),
+        None => println("u ausente"),
+    }
+    avanca_relogio(&c, 3);
+    match cache_get(&c, "s") {
+        Some(v) => println("s = " + v),
+        None => println("s expirou"),
+    }
+    let restantes = cache_limpar(&c);
+    println("restantes = " + str::from_int(restantes));
+}
+
+#[test]
+fn testa_cache_put_get() {
+    let mut c = cache_novo();
+    cache_put(&c, "k", "v", 10);
+    assert_eq(cache_get(&c, "k"), Some("v"));
+}
+
+#[test]
+fn testa_cache_expiracao() {
+    let mut c = cache_novo();
+    cache_put(&c, "k", "v", 2);
+    avanca_relogio(&c, 3);
+    assert_eq(cache_get(&c, "k"), None);
+}

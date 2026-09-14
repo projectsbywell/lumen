@@ -1,0 +1,22 @@
+/// 029 — Soma coluna de CSV.
+///
+/// Quebra linhas e campos com `str::split` e soma a coluna 1.
+
+/// Soma os inteiros da coluna `col` de um CSV simples.
+fn soma_coluna(csv: str, col: i32) -> i32 {
+    let linhas = str::split(csv, "\n");
+    let mut total: i32 = 0;
+    let mut i: i32 = 1;
+    while i < vec::len(linhas) {
+        let campos = str::split(linhas[i], ",");
+        total = total + str::para_int(campos[col]);
+        i = i + 1;
+    }
+    return total;
+}
+
+fn main() {
+    let csv: str = "nome,idade\nana,30\nbia,25";
+    println("soma das idades:");
+    println(soma_coluna(csv, 1));
+}

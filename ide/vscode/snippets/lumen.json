@@ -1,0 +1,138 @@
+{
+  "Função (fn)": {
+    "prefix": "fn",
+    "scope": "source.lumen",
+    "description": "Declara uma função Lumen",
+    "body": [
+      "fn ${1:nome}(${2:a: int, b: int}) -> ${3:int} {",
+      "    ${0:return a + b;}",
+      "}"
+    ]
+  },
+  "Função pública (pub fn)": {
+    "prefix": "pubfn",
+    "scope": "source.lumen",
+    "description": "Declara uma função pública (ponto de entrada)",
+    "body": [
+      "pub fn ${1:main}() -> int {",
+      "    ${0:return 0;}",
+      "}"
+    ]
+  },
+  "Variável (let)": {
+    "prefix": "let",
+    "scope": "source.lumen",
+    "description": "Declara variável imutável",
+    "body": ["let ${1:x} = ${0:42};"]
+  },
+  "Variável mutável (let mut)": {
+    "prefix": "letmut",
+    "scope": "source.lumen",
+    "description": "Declara variável mutável",
+    "body": ["let mut ${1:n} = ${0:0};"]
+  },
+  "Constante (const)": {
+    "prefix": "const",
+    "scope": "source.lumen",
+    "description": "Declara uma constante",
+    "body": ["const ${1:PI} = ${0:3.14};"]
+  },
+  "Condicional (if/else)": {
+    "prefix": "if",
+    "scope": "source.lumen",
+    "description": "Condicional if/else",
+    "body": [
+      "if ${1:x > 0} {",
+      "    ${2:print(x);}",
+      "} else {",
+      "    ${0:print(0);}",
+      "}"
+    ]
+  },
+  "Laço for": {
+    "prefix": "for",
+    "scope": "source.lumen",
+    "description": "Laço for sobre intervalo",
+    "body": [
+      "for ${1:i} in ${2:0..10} {",
+      "    ${0:print(i);}",
+      "}"
+    ]
+  },
+  "Laço while": {
+    "prefix": "while",
+    "scope": "source.lumen",
+    "description": "Laço while",
+    "body": [
+      "while ${1:n > 0} {",
+      "    ${0:n = n - 1;}",
+      "}"
+    ]
+  },
+  "Pattern matching (match)": {
+    "prefix": "match",
+    "scope": "source.lumen",
+    "description": "Expressão match com arms",
+    "body": [
+      "match ${1:valor} {",
+      "    ${2:0} => ${3:\"zero\"},",
+      "    _ => ${0:\"outro\"},",
+      "}"
+    ]
+  },
+  "Struct": {
+    "prefix": "struct",
+    "scope": "source.lumen",
+    "description": "Declara um struct",
+    "body": [
+      "struct ${1:Nome} {",
+      "    ${2:campo}: ${3:int},",
+      "}"
+    ]
+  },
+  "Enum": {
+    "prefix": "enum",
+    "scope": "source.lumen",
+    "description": "Declara uma enumeração",
+    "body": [
+      "enum ${1:Cor} {",
+      "    ${2:Vermelho},",
+      "    ${0:Verde},",
+      "}"
+    ]
+  },
+  "Impl": {
+    "prefix": "impl",
+    "scope": "source.lumen",
+    "description": "Bloco de implementação",
+    "body": [
+      "impl ${1:Nome} {",
+      "    fn ${2:novo}() -> Self {",
+      "        ${0:return Self {};}",
+      "    }",
+      "}"
+    ]
+  },
+  "Import (use)": {
+    "prefix": "use",
+    "scope": "source.lumen",
+    "description": "Importa um módulo",
+    "body": ["use ${0:std::io};"]
+  },
+  "Print": {
+    "prefix": "print",
+    "scope": "source.lumen",
+    "description": "Imprime valor",
+    "body": ["print(${0:x});"]
+  },
+  "Teste (test)": {
+    "prefix": "test",
+    "scope": "source.lumen",
+    "description": "Bloco de teste Lumen",
+    "body": [
+      "test \"${1:descrição}\" {",
+      "    assert(${0:1 + 1 == 2});",
+      "}"
+    ]
+  }
+}

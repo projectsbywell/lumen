@@ -1,0 +1,74 @@
+# Lumen Standard Library — HTTP Module (Reference .lum)
+# Mirrors the Python API in pylumen/httpx.py
+
+module httpx
+
+  # HTTP response wrapper.
+  type LumenResponse
+    status_code: Int
+    headers: Map<String, String>
+    private _body: String?
+
+    fun body(): String
+      if _body == nil
+        _body = read()
+      return _body
+
+    fun json(): Any
+      return json.deserialize(body())
+
+    fun text(): String
+      return body()
+
+    fun is_success(): Bool
+      return status_code >= 200 and status_code < 300
+
+    fun is_redirect(): Bool
+      return status_code >= 300 and status_code < 400
+
+    fun is_error(): Bool
+      return status_code >= 400
+
+  # Minimal HTTP client.
+  type HTTPClient
+    timeout: Int
+    headers: Map<String, String>
+
+    fun __init__(timeout: Int = 30, headers: Map<String, String>? = nil): Unit
+      self.timeout = timeout
+      self.headers = headers or {}
+
+    fun get(url: String, ...kwargs): LumenResponse
+      return request("GET", url, kwargs)
+
+    fun post(url: String, data: Any?, ...kwargs): LumenResponse
+      return request("POST", url, data, kwargs)
+
+    fun put(url: String, data: Any?, ...kwargs): LumenResponse
+      return request("PUT", url, data, kwargs)
+
+    fun delete(url: String, ...kwargs): LumenResponse
+      return request("DELETE", url, kwargs)
+
+    fun patch(url: String, data: Any?, ...kwargs): LumenResponse
+      return request("PATCH", url, data, kwargs)
+
+    private fun request(method: String, url: String, data: Any?, headers: Map<String, String>): LumenResponse
+      # Implementation using urllib
+      ...
+
+  # Module-level convenience functions.
+  fun get(url: String, ...kwargs): LumenResponse
+    return default_client.get(url, kwargs)
+
+  fun post(url: String, data: Any?, ...kwargs): LumenResponse
+    return default_client.post(url, data, kwargs)
+
+  fun put(url: String, data: Any?, ...kwargs): LumenResponse
+    return default_client.put(url, data, kwargs)
+
+  fun delete(url: String, ...kwargs): LumenResponse
+    return default_client.delete(url, kwargs)
+
+  fun request(method: String, url: String, ...kwargs): LumenResponse
+    return default_client.request(method, url, kwargs)

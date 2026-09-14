@@ -1,0 +1,40 @@
+# Lumen Standard Library — YAML Module (Reference .lum)
+# Mirrors the Python API in pylumen/yamlx.py
+# Subset: block maps (indent nesting), `-` sequences, inline [a, b] / {k: v},
+# scalars (int, float, bool, null, quoted/plain strings), `#` comments.
+
+module yamlx
+
+  # Deserialize a YAML-subset string to an object.
+  fun loads(s: String): Any
+    return yaml.parse(s)
+
+  # Serialize object to a YAML-subset string.
+  fun dumps(obj: Any): String
+    return yaml.serialize(obj)
+
+  # Convert object to YAML string.
+  fun to_yaml(obj: Any): String
+    return dumps(obj)
+
+  # Convert YAML string to object.
+  fun from_yaml(s: String): Any
+    return loads(s)
+
+  # Write object as YAML to file. Returns chars written.
+  fun to_yaml_file(obj: Any, filepath: String): Int
+    with open(filepath, "w") as f
+      return f.write(dumps(obj))
+
+  # Read YAML-subset from file.
+  fun from_yaml_file(filepath: String): Any
+    with open(filepath, "r") as f
+      return loads(f.read())
+
+  # Check if string parses as YAML-subset.
+  fun is_yaml(s: String): Bool
+    try
+      loads(s)
+      return true
+    catch ParseError
+      return false

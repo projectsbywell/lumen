@@ -1,0 +1,28 @@
+/// 012 — SQLite embarcado.
+///
+/// `sqlite::abrir(":memory:")` cria um banco em RAM — perfeito para
+/// testes. `exec` roda DDL/DML, `query` devolve linhas.
+
+use std::sqlite;
+
+/// Cria a tabela e insere dois usuários. Retorna linhas afetadas.
+fn prepara(db: mut sqlite::Db) -> Result<i32, str> {
+    sqlite::exec(db, "CREATE TABLE usuario (nome TEXT, idade INT)")?;
+    sqlite::exec(db, "INSERT INTO usuario VALUES ('ana', 30)")?;
+    return sqlite::exec(db, "INSERT INTO usuario VALUES ('bia', 25)");
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut db = sqlite::abrir(":memory:")?;
+    let n = prepara(db)?;
+    println("linhas = " + str::from_int(n));
+    let linhas = sqlite::query(db, "SELECT nome FROM usuario")?;
+    println("total = " + str::from_int(vec::len(linhas)));
+}
+
+#[test]
+fn testa_prepara() {
+    let mut db = sqlite::abrir(":memory:")?;
+    assert_eq(prepara(db)?, 1);
+}

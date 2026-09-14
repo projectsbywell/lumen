@@ -1,0 +1,43 @@
+/// 053 — Concorrência com `spawn`/`await` (runtime cooperativo).
+///
+/// O runtime/threads.py provê Future, poll, block_on, await cooperativo
+/// e Channel.receber(timeout=0 = não-bloqueante).
+///
+/// ATENÇÃO: `channel`/`Channel` NÃO está disponível via .lum (não há
+/// `use std::sync::channel` na stdlib). Veja docs/TUTORIAIS.md para
+/// detalhes da limitação e alternativas.
+
+/// Soma os inteiros de [inicio, fim).
+async fn soma_intervalo(inicio: i32, fim: i32) -> i32 {
+    let mut total = 0i32;
+    let mut i = inicio;
+    while i < fim {
+        total = total + i;
+        i = i + 1;
+    }
+    return total;
+}
+
+/// Executa duas somas em concorrência via spawn e await.
+async fn soma_concorrente() -> i32 {
+    let ha = spawn soma_intervalo(0, 1000);
+    let hb = spawn soma_intervalo(1000, 2000);
+    return await ha + await hb;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let h = spawn soma_concorrente();
+    println(str::from_int(await h));
+}
+
+#[test]
+fn testa_soma_concorrente() {
+    assert_eq(await soma_concorrente(), 1999000i32);
+}
+
+#[test]
+fn testa_soma_intervalo() {
+    assert_eq(await soma_intervalo(0, 10), 45i32);
+    assert_eq(await soma_intervalo(5, 15), 95i32);
+}

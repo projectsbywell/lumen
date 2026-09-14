@@ -1,0 +1,25 @@
+# SHA256SUMS.txt — checksums dos artefatos da release v0.4.0
+#
+# Gerado automaticamente pelo CI (infra/ci.yml, job build-release, passo
+# "Checksums sha256") em cada OS:
+#
+#   find dist -maxdepth 1 -type f -print0 | xargs -0 sha256sum > dist/SHA256SUMS.txt
+#
+# APÓS a release real (git tag v0.4.0 + push --tags), copiar para cá os
+# valores finais publicados (uma linha por artefato, `<hash>  <arquivo>`).
+# Até lá, os valores abaixo são PLACEHOLDERS — não usar para verificação.
+#
+# Assets esperados por OS (matriz 3-OS do job build-release):
+#   lumen-0.4.0.tar.gz            sdist (PyPI) — qualquer OS (idêntico)
+#   lumen-0.4.0-py3-none-any.whl  wheel (PyPI) — qualquer OS (idêntico)
+#   lumen                         binário Linux x86_64 (PyInstaller onefile)
+#   lumen.exe                     binário Windows x86_64 (PyInstaller onefile)
+#   lumen                         binário macOS (x86_64/arm64 conforme runner)
+#
+# Verificação local:
+#   sha256sum -c SHA256SUMS.txt
+PLACEHOLDER_<sha256 do sdist>  lumen-0.4.0.tar.gz
+PLACEHOLDER_<sha256 do wheel>  lumen-0.4.0-py3-none-any.whl
+PLACEHOLDER_<sha256 do binário linux>  lumen
+PLACEHOLDER_<sha256 do binário windows>  lumen.exe
+PLACEHOLDER_<sha256 do binário macOS>  lumen

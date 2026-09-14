@@ -1,0 +1,97 @@
+/// 018 — Busca binária iterativa em `Vec<i32>` ordenado.
+///
+/// A busca binária divide o intervalo ao meio a cada passo.
+/// Retorna `Some(posição)` se encontrar o alvo e `None` caso
+/// contrário. Mostra `while`, `match` e `Option`.
+
+use std::vec;
+use std::str;
+
+/// Busca `alvo` em `v` ordenado. Devolve `Some(indice)` ou `None`.
+fn busca_binaria(v: Vec<i32>, alvo: i32) -> Option<i32> {
+    let mut ini: i32 = 0;
+    let mut fim: i32 = vec::len(v) - 1;
+    while ini <= fim {
+        let meio: i32 = (ini + fim) / 2;
+        let val = match vec::get(v, meio) {
+            Some(x) => x,
+            None => 0,
+        };
+        if val == alvo {
+            return Some(meio);
+        }
+        if val < alvo {
+            ini = meio + 1;
+        } else {
+            fim = meio - 1;
+        }
+    }
+    return None;
+}
+
+/// Versão que devolve `Result` com mensagem em caso de falha.
+fn busca_resultado(v: Vec<i32>, alvo: i32) -> Result<i32, str> {
+    return match busca_binaria(&v, alvo) {
+        Some(idx) => Ok(idx),
+        None => Err("não encontrado: " + str::from_int(alvo)),
+    };
+}
+
+/// Verifica se o vetor está ordenado (pré-condição).
+fn esta_ordenado(v: Vec<i32>) -> bool {
+    let n = vec::len(v);
+    if n <= 1 {
+        return true;
+    }
+    let mut i: i32 = 0;
+    while i < n - 1 {
+        let a = match vec::get(v, i) {
+            Some(x) => x,
+            None => 0,
+        };
+        let b = match vec::get(v, i + 1) {
+            Some(x) => x,
+            None => 0,
+        };
+        if a > b {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let nums = vec![1, 3, 5, 7, 9, 11, 13];
+    println("ordenado? " + str::from_int(if esta_ordenado(&nums) { 1 } else { 0 }));
+
+    match busca_binaria(&nums, 7) {
+        Some(idx) => println("7 em " + str::from_int(idx)),
+        None => println("7 não encontrado"),
+    }
+
+    match busca_binaria(&nums, 4) {
+        Some(idx) => println("4 em " + str::from_int(idx)),
+        None => println("4 não encontrado"),
+    }
+
+    match busca_resultado(&nums, 13) {
+        Ok(idx) => println("13 ok em " + str::from_int(idx)),
+        Err(e) => println("erro: " + e),
+    }
+
+    match busca_resultado(&nums, 2) {
+        Ok(idx) => println("ok " + str::from_int(idx)),
+        Err(e) => println("erro: " + e),
+    }
+}
+
+#[test]
+fn testa_busca() {
+    let v = vec![1, 3, 5, 7, 9];
+    assert_eq(busca_binaria(&v, 3), Some(1));
+    assert_eq(busca_binaria(&v, 7), Some(3));
+    assert_eq(busca_binaria(&v, 2), None);
+    assert_eq(busca_binaria(vec![], 1), None);
+}

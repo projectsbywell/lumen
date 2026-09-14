@@ -1,0 +1,898 @@
+{
+  "spec": "0.1.0",
+  "suite": "0.1.0",
+  "total": 50,
+  "passed": 50,
+  "failed": 0,
+  "success": true,
+  "cases": [
+    {
+      "id": "LEX-01",
+      "category": "lexer",
+      "name": "palavras-chave e tipos",
+      "src": "fn soma(a: i32, b: i32) -> i32 { return a + b; }",
+      "expected": [
+        [
+          "KEY",
+          "fn"
+        ],
+        [
+          "IDENT",
+          "soma"
+        ],
+        [
+          "SYM",
+          "("
+        ],
+        [
+          "IDENT",
+          "a"
+        ],
+        [
+          "OP",
+          ":"
+        ],
+        [
+          "IDENT",
+          "i32"
+        ],
+        [
+          "SYM",
+          ","
+        ],
+        [
+          "IDENT",
+          "b"
+        ],
+        [
+          "OP",
+          ":"
+        ],
+        [
+          "IDENT",
+          "i32"
+        ],
+        [
+          "SYM",
+          ")"
+        ],
+        [
+          "OP",
+          "->"
+        ],
+        [
+          "IDENT",
+          "i32"
+        ],
+        [
+          "SYM",
+          "{"
+        ],
+        [
+          "KEY",
+          "return"
+        ],
+        [
+          "IDENT",
+          "a"
+        ],
+        [
+          "OP",
+          "+"
+        ],
+        [
+          "IDENT",
+          "b"
+        ],
+        [
+          "SYM",
+          ";"
+        ],
+        [
+          "SYM",
+          "}"
+        ]
+      ],
+      "actual": [
+        [
+          "KEY",
+          "fn"
+        ],
+        [
+          "IDENT",
+          "soma"
+        ],
+        [
+          "SYM",
+          "("
+        ],
+        [
+          "IDENT",
+          "a"
+        ],
+        [
+          "OP",
+          ":"
+        ],
+        [
+          "IDENT",
+          "i32"
+        ],
+        [
+          "SYM",
+          ","
+        ],
+        [
+          "IDENT",
+          "b"
+        ],
+        [
+          "OP",
+          ":"
+        ],
+        [
+          "IDENT",
+          "i32"
+        ],
+        [
+          "SYM",
+          ")"
+        ],
+        [
+          "OP",
+          "->"
+        ],
+        [
+          "IDENT",
+          "i32"
+        ],
+        [
+          "SYM",
+          "{"
+        ],
+        [
+          "KEY",
+          "return"
+        ],
+        [
+          "IDENT",
+          "a"
+        ],
+        [
+          "OP",
+          "+"
+        ],
+        [
+          "IDENT",
+          "b"
+        ],
+        [
+          "SYM",
+          ";"
+        ],
+        [
+          "SYM",
+          "}"
+        ]
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "LEX-02",
+      "category": "lexer",
+      "name": "comentário de doc /// vira DOC",
+      "src": "/// Soma dois inteiros.\nfn soma() {}",
+      "expected": [
+        "Soma dois inteiros."
+      ],
+      "actual": [
+        "Soma dois inteiros."
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "LEX-03",
+      "category": "lexer",
+      "name": "string com escapes",
+      "src": "\"olá\\nmundo\\t\\\"x\\\"\"",
+      "expected": "olá\nmundo\t\"x\"",
+      "actual": "olá\nmundo\t\"x\"",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "LEX-04",
+      "category": "lexer",
+      "name": "literais int, float e char",
+      "src": "42 3.14 1_000 'x'",
+      "expected": [
+        [
+          "INT",
+          42
+        ],
+        [
+          "FLOAT",
+          3.14
+        ],
+        [
+          "INT",
+          1000
+        ],
+        [
+          "CHAR",
+          "x"
+        ]
+      ],
+      "actual": [
+        [
+          "INT",
+          42
+        ],
+        [
+          "FLOAT",
+          3.14
+        ],
+        [
+          "INT",
+          1000
+        ],
+        [
+          "CHAR",
+          "x"
+        ]
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "LEX-05",
+      "category": "lexer",
+      "name": "operadores multi-char",
+      "src": "=> -> :: .. ..= == != <= && ||",
+      "expected": [
+        "=>",
+        "->",
+        "::",
+        "..",
+        "..=",
+        "==",
+        "!=",
+        "<=",
+        "&&",
+        "||"
+      ],
+      "actual": [
+        "=>",
+        "->",
+        "::",
+        "..",
+        "..=",
+        "==",
+        "!=",
+        "<=",
+        "&&",
+        "||"
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "PAR-01",
+      "category": "parser",
+      "name": "definição de função",
+      "src": "fn soma(a: i32, b: i32) -> i32 { return a + b; }",
+      "expected": {
+        "name": "soma",
+        "nparams": 2,
+        "ret": "i32",
+        "async": false
+      },
+      "actual": {
+        "name": "soma",
+        "nparams": 2,
+        "ret": "i32",
+        "async": false
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "PAR-02",
+      "category": "parser",
+      "name": "definição de struct",
+      "src": "pub struct Ponto { x: f64, y: f64 }",
+      "expected": {
+        "name": "Ponto",
+        "fields": [
+          "x",
+          "y"
+        ]
+      },
+      "actual": {
+        "name": "Ponto",
+        "fields": [
+          "x",
+          "y"
+        ]
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "PAR-03",
+      "category": "parser",
+      "name": "definição de enum com payload",
+      "src": "pub enum Forma { Circulo(f64), Retangulo(f64, f64), Ponto }",
+      "expected": {
+        "name": "Forma",
+        "variants": [
+          [
+            "Circulo",
+            1
+          ],
+          [
+            "Retangulo",
+            2
+          ],
+          [
+            "Ponto",
+            0
+          ]
+        ]
+      },
+      "actual": {
+        "name": "Forma",
+        "variants": [
+          [
+            "Circulo",
+            1
+          ],
+          [
+            "Retangulo",
+            2
+          ],
+          [
+            "Ponto",
+            0
+          ]
+        ]
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "PAR-04",
+      "category": "parser",
+      "name": "match com or-pattern e guard",
+      "src": "match x { 0 => 1, 1 | 2 => 3, n if n > 2 => 4, _ => 5 }",
+      "expected": {
+        "arms": 4,
+        "has_or": true,
+        "has_guard": true,
+        "has_wild": true
+      },
+      "actual": {
+        "arms": 4,
+        "has_or": true,
+        "has_guard": true,
+        "has_wild": true
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "PAR-05",
+      "category": "parser",
+      "name": "definição de macro",
+      "src": "macro unless(cond, corpo) { if !cond { corpo } }",
+      "expected": {
+        "name": "unless",
+        "params": [
+          "cond",
+          "corpo"
+        ]
+      },
+      "actual": {
+        "name": "unless",
+        "params": [
+          "cond",
+          "corpo"
+        ]
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "PAR-06",
+      "category": "parser",
+      "name": "fn async",
+      "src": "async fn buscar(url: str) -> str { return url; }",
+      "expected": {
+        "name": "buscar",
+        "async": true,
+        "ret": "str"
+      },
+      "actual": {
+        "name": "buscar",
+        "async": true,
+        "ret": "str"
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "TIP-01",
+      "category": "tipos",
+      "name": "inferência i32",
+      "src": "2 + 3 * 4",
+      "expected": "i32",
+      "actual": "i32",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "TIP-02",
+      "category": "tipos",
+      "name": "promoção para f64",
+      "src": "2 + 3.0",
+      "expected": "f64",
+      "actual": "f64",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "TIP-03",
+      "category": "tipos",
+      "name": "concat str",
+      "src": "\"a\" + \"b\"",
+      "expected": "str",
+      "actual": "str",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "TIP-04",
+      "category": "tipos",
+      "name": "? extrai T de Result<T,E>",
+      "src": "r?",
+      "expected": "i32",
+      "actual": "i32",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "TIP-05",
+      "category": "tipos",
+      "name": "vec homogêneo",
+      "src": "vec![1, 2, 3]",
+      "expected": "Vec<i32>",
+      "actual": "Vec<i32>",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "TIP-06",
+      "category": "tipos",
+      "name": "erro: somar i32 com str",
+      "src": "1 + \"a\"",
+      "expected": "ERR:+ inválido para i32, str",
+      "actual": "ERR:+ inválido para i32, str",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "MAT-01",
+      "category": "match",
+      "name": "literal",
+      "src": "match 2 { 1 => \"um\", 2 => \"dois\", _ => \"outro\" }",
+      "expected": "dois",
+      "actual": "dois",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "MAT-02",
+      "category": "match",
+      "name": "wildcard",
+      "src": "match 99 { 1 => \"um\", _ => \"outro\" }",
+      "expected": "outro",
+      "actual": "outro",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "MAT-03",
+      "category": "match",
+      "name": "or-pattern com binding",
+      "src": "match 2 { 1 | 2 => \"pequeno\", _ => \"grande\" }",
+      "expected": "pequeno",
+      "actual": "pequeno",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "MAT-04",
+      "category": "match",
+      "name": "guard",
+      "src": "match 15 { n if n > 10 => \"grande\", _ => \"pequeno\" }",
+      "expected": "grande",
+      "actual": "grande",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "MAT-05",
+      "category": "match",
+      "name": "destruturar variante de enum",
+      "src": "match Forma::Retangulo(3, 4) { Forma::Circulo(r) => 0, Forma::Retangulo(w, h) => w * h, Forma::Ponto => 0 }",
+      "expected": 12,
+      "actual": 12,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "ST-01",
+      "category": "struct_enum",
+      "name": "struct init + acesso a campo",
+      "src": "Ponto { x: 1.0, y: 2.0 }.x + Ponto { x: 1.0, y: 2.0 }.y",
+      "expected": 3.0,
+      "actual": 3.0,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "ST-02",
+      "category": "struct_enum",
+      "name": "método via impl (desugar p.f() -> f(p))",
+      "src": "norma(Ponto { x: 3.0, y: 4.0 })",
+      "expected": 5.0,
+      "actual": 5.0,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "ST-03",
+      "category": "struct_enum",
+      "name": "enum com payload preserva valores",
+      "src": "Forma::Circulo(2.5)",
+      "expected": [
+        "Circulo",
+        [
+          2.5
+        ]
+      ],
+      "actual": [
+        "Circulo",
+        [
+          2.5
+        ]
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "ST-04",
+      "category": "struct_enum",
+      "name": "match exaustivo em Cor",
+      "src": "match Cor::Verde { Cor::Vermelho => \"v\", Cor::Verde => \"vd\", Cor::Azul => \"a\" }",
+      "expected": "vd",
+      "actual": "vd",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BC-01",
+      "category": "bytecode",
+      "name": "compila 2 + 3 * 4",
+      "src": "2 + 3 * 4",
+      "expected": "0000 CONST i32 2\n0001 CONST i32 3\n0002 CONST i32 4\n0003 MUL\n0004 ADD",
+      "actual": "0000 CONST i32 2\n0001 CONST i32 3\n0002 CONST i32 4\n0003 MUL\n0004 ADD",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BC-02",
+      "category": "bytecode",
+      "name": "VM executa 2 + 3 * 4 = 14",
+      "src": "2 + 3 * 4",
+      "expected": 14,
+      "actual": 14,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BC-03",
+      "category": "bytecode",
+      "name": "comparação na VM",
+      "src": "3 < 5",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BC-04",
+      "category": "bytecode",
+      "name": "pool de constantes",
+      "src": "1 + 2",
+      "expected": [
+        "i32:1",
+        "i32:2"
+      ],
+      "actual": [
+        "i32:1",
+        "i32:2"
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BC-05",
+      "category": "bytecode",
+      "name": "opcodes válidos",
+      "src": "10 - 2 * 3",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BE-01",
+      "category": "backends",
+      "name": "C contém int32 e return",
+      "src": "40 + 2",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BE-02",
+      "category": "backends",
+      "name": "WASM contém i32.add/const",
+      "src": "40 + 2",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BE-03",
+      "category": "backends",
+      "name": "VM disasm lista CONST/ADD",
+      "src": "1 + 2",
+      "expected": "0000 CONST i32 1\n0001 CONST i32 2\n0002 ADD",
+      "actual": "0000 CONST i32 1\n0001 CONST i32 2\n0002 ADD",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "BE-04",
+      "category": "backends",
+      "name": "target padrão é vm",
+      "src": "lumen build app.lum",
+      "expected": "vm",
+      "actual": "vm",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "RT-01",
+      "category": "runtime",
+      "name": "println escreve saída",
+      "src": "fn main() { println(\"Olá, Lumen!\"); }",
+      "expected": [
+        "Olá, Lumen!\n",
+        0
+      ],
+      "actual": [
+        "Olá, Lumen!\n",
+        0
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "RT-02",
+      "category": "runtime",
+      "name": "aritmética no main",
+      "src": "fn main() { println(2 + 3 * 4); }",
+      "expected": [
+        "14\n",
+        0
+      ],
+      "actual": [
+        "14\n",
+        0
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "RT-03",
+      "category": "runtime",
+      "name": "let/mut + reatribuição",
+      "src": "fn main() { let mut y: i32 = 1; y = y + 1; println(y); }",
+      "expected": [
+        "2\n",
+        0
+      ],
+      "actual": [
+        "2\n",
+        0
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "RT-04",
+      "category": "runtime",
+      "name": "panic retorna código 1 + msg",
+      "src": "fn main() { panic(\"boom\"); }",
+      "expected": [
+        1,
+        "boom"
+      ],
+      "actual": [
+        1,
+        "boom"
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "RT-05",
+      "category": "runtime",
+      "name": "match dentro do main",
+      "src": "fn main() { let x = 2; match x { 1 => println(\"um\"), _ => println(\"outro\"), } }",
+      "expected": [
+        "outro\n",
+        0
+      ],
+      "actual": [
+        "outro\n",
+        0
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-01",
+      "category": "stdlib",
+      "name": "str::len conta chars",
+      "src": "str::len(\"olá\")",
+      "expected": 3,
+      "actual": 3,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-02",
+      "category": "stdlib",
+      "name": "str::upper",
+      "src": "str::upper(\"lumen\")",
+      "expected": "LUMEN",
+      "actual": "LUMEN",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-03",
+      "category": "stdlib",
+      "name": "math::fat(5) = 120",
+      "src": "math::fat(5)",
+      "expected": [
+        "Ok",
+        120
+      ],
+      "actual": [
+        "Ok",
+        120
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-04",
+      "category": "stdlib",
+      "name": "math::sqrt(2) ≈ 1.414214",
+      "src": "math::sqrt(2)",
+      "expected": 1.414214,
+      "actual": 1.414214,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-05",
+      "category": "stdlib",
+      "name": "vec::len",
+      "src": "vec::len(vec![1, 2, 3])",
+      "expected": 3,
+      "actual": 3,
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-06",
+      "category": "stdlib",
+      "name": "map! literal + acesso",
+      "src": "map!{ \"a\": 1 }",
+      "expected": {
+        "a": 1
+      },
+      "actual": {
+        "a": 1
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-07",
+      "category": "stdlib",
+      "name": "json roundtrip",
+      "src": "{\"a\": 1, \"b\": [1, 2]}",
+      "expected": {
+        "a": 1,
+        "b": [
+          1,
+          2
+        ]
+      },
+      "actual": {
+        "a": 1,
+        "b": [
+          1,
+          2
+        ]
+      },
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-08",
+      "category": "stdlib",
+      "name": "io::println + ? em read simulado",
+      "src": "fn main() { println(\"x\"); }",
+      "expected": [
+        "x\n",
+        0
+      ],
+      "actual": [
+        "x\n",
+        0
+      ],
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-09",
+      "category": "stdlib",
+      "name": "Result Err propaga com ?",
+      "src": "math::fat(0 - 1)?",
+      "expected": "ERR:n negativo",
+      "actual": "ERR:n negativo",
+      "status": "PASS",
+      "error": ""
+    },
+    {
+      "id": "STD-10",
+      "category": "stdlib",
+      "name": "async spawn/await preserva ordem",
+      "src": "async { spawn 1, spawn 2, spawn 3 }",
+      "expected": [
+        1,
+        2,
+        3
+      ],
+      "actual": [
+        1,
+        2,
+        3
+      ],
+      "status": "PASS",
+      "error": ""
+    }
+  ]
+}

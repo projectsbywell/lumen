@@ -1,0 +1,29 @@
+/// 004 — `match`: literais, or-patterns, guards e wildcard.
+///
+/// O `match` precisa ser exaustivo: o último braço `_` cobre o resto.
+
+/// Classifica um inteiro.
+fn classifica(n: i32) -> str {
+    return match n {
+        0 => "zero",
+        1 | 2 => "pequeno",
+        v if v < 0 => "negativo",
+        v if v > 100 => "grande",
+        _ => "médio",
+    };
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    println(classifica(0));
+    println(classifica(2));
+    println(classifica(-5));
+    println(classifica(1000));
+    println(classifica(42));
+}
+
+#[test]
+fn testa_classifica() {
+    assert_eq(classifica(1), "pequeno");
+    assert_eq(classifica(42), "médio");
+}

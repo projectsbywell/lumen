@@ -1,0 +1,148 @@
+# Lumen Standard Library — Testing Module (Reference .lum)
+# Mirrors the Python API in pylumen/testingx.py
+
+module testingx
+
+  # Exception raised when assertion fails.
+  type AssertError extends Exception
+
+  # Base test case class.
+  type TestCase
+    name: String
+    _results: List<Map<String, Any>>
+    passed: Int = 0
+    failed: Int = 0
+    errors: Int = 0
+
+    fun __init__(name: String = ""): Unit
+      self.name = name or type(self).__name__
+
+    fun setup(): Unit
+      # Override to set up test fixtures.
+
+    fun teardown(): Unit
+      # Override to tear down test fixtures.
+
+    fun assert_eq(a: Any, b: Any, msg: String = ""): Bool
+      if a != b then raise AssertError(msg or f"Expected {a} == {b}")
+      return true
+
+    fun assert_ne(a: Any, b: Any, msg: String = ""): Bool
+      if a == b then raise AssertError(msg or f"Expected {a} != {b}")
+      return true
+
+    fun assert_true(condition: Bool, msg: String = ""): Bool
+      if not condition then raise AssertError(msg or "Expected True")
+      return true
+
+    fun assert_false(condition: Bool, msg: String = ""): Bool
+      if condition then raise AssertError(msg or "Expected False")
+      return true
+
+    fun assert_none(value: Any, msg: String = ""): Bool
+      if value != nil then raise AssertError(msg or "Expected None")
+      return true
+
+    fun assert_not_none(value: Any, msg: String = ""): Bool
+      if value == nil then raise AssertError(msg or "Expected not None")
+      return true
+
+    fun assert_in(member: Any, container: Any, msg: String = ""): Bool
+      if member not in container then raise AssertError(msg or f"{member} not in {container}")
+      return true
+
+    fun assert_not_in(member: Any, container: Any, msg: String = ""): Bool
+      if member in container then raise AssertError(msg or f"{member} in {container}")
+      return true
+
+    fun assert_is_instance(obj: Any, cls: Type, msg: String = ""): Bool
+      if not isinstance(obj, cls) then raise AssertError(msg or f"Expected instance of {cls}")
+      return true
+
+    fun assert_raises(exc_type: Type<Exception>, func: Callable, ...args, **kwargs): Bool
+      try
+        func(args...)
+        raise AssertError(f"Expected {exc_type} to be raised")
+      catch exc_type
+        return true
+
+    fun assert_almost_eq(a: Float, b: Float, places: Int = 7, msg: String = ""): Bool
+      if round(abs(a - b), places) != 0 then raise AssertError(msg or f"Expected {a} ≈ {b}")
+      return true
+
+    fun assert_greater(a: Float, b: Float, msg: String = ""): Bool
+      if not a > b then raise AssertError(msg or f"Expected {a} > {b}")
+      return true
+
+    fun assert_less(a: Float, b: Float, msg: String = ""): Bool
+      if not a < b then raise AssertError(msg or f"Expected {a} < {b}")
+      return true
+
+    fun run(): Map<String, Any>
+      methods = [m for m in dir(self) if m.startswith("test_") and callable(getattr(self, m))]
+      for method_name in sorted(methods)
+        self.setup()
+        try
+          getattr(self, method_name)()
+          self.passed += 1
+          _results.append({"name": method_name, "status": "PASS"})
+        catch AssertError as e
+          self.failed += 1
+          _results.append({"name": method_name, "status": "FAIL", "error": str(e)})
+        catch Exception as e
+          self.errors += 1
+          _results.append({"name": method_name, "status": "ERROR", "error": str(e)})
+        finally
+          self.teardown()
+      return {"name": self.name, "passed": self.passed, "failed": self.failed, "errors": self.errors, "success": self.failed == 0 and self.errors == 0}
+
+  # Module-level assertion functions.
+  fun assert_eq(a: Any, b: Any, msg: String = ""): Bool
+    return TestCase().assert_eq(a, b, msg)
+
+  fun assert_ne(a: Any, b: Any, msg: String = ""): Bool
+    return TestCase().assert_ne(a, b, msg)
+
+  fun assert_true(condition: Bool, msg: String = ""): Bool
+    return TestCase().assert_true(condition, msg)
+
+  fun assert_false(condition: Bool, msg: String = ""): Bool
+    return TestCase().assert_false(condition, msg)
+
+  # Measure execution time of a function.
+  fun measure_time(func: Callable, ...args, **kwargs): Tuple<Any, Float>
+    start = time.perf_counter()
+    result = func(args...)
+    elapsed = time.perf_counter() - start
+    return (result, elapsed)
+
+  # Measure peak memory usage of a function.
+  fun measure_memory(func: Callable, ...args, **kwargs): Tuple<Any, Int>
+    tracemalloc.start()
+    result = func(args...)
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    return (result, peak)
+
+  # Collection of test cases.
+  type TestSuite
+    name: String
+    _cases: List<TestCase>
+
+    fun __init__(name: String = "Suite"): Unit
+      self.name = name
+
+    fun add(test_case: TestCase): Unit
+      self._cases.append(test_case)
+
+    fun run(): Map<String, Any>
+      total_passed = 0
+      total_failed = 0
+      total_errors = 0
+      for case in self._cases
+        summary = case.run()
+        total_passed += summary.passed
+        total_failed += summary.failed
+        total_errors += summary.errors
+      total = total_passed + total_failed + total_errors
+      return {"name": self.name, "total": total, "passed": total_passed, "failed": total_failed, "errors": total_errors, "success": total_failed == 0 and total_errors == 0}

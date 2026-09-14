@@ -1,0 +1,24 @@
+/// 026 — Palíndromo numérico.
+///
+/// Inverte os dígitos com `%` e `/` e compara com o original.
+
+/// Inverte os dígitos de `n`.
+fn inverte(mut n: i32) -> i32 {
+    let mut r: i32 = 0;
+    while n > 0 {
+        r = r * 10 + n % 10;
+        n = n / 10;
+    }
+    return r;
+}
+
+/// Verdadeiro se `n` é palíndromo.
+fn eh_palindromo(n: i32) -> bool {
+    return inverte(n) == n;
+}
+
+fn main() {
+    println("121 eh palindromo?");
+    println(eh_palindromo(121));
+    println(eh_palindromo(123));
+}

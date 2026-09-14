@@ -1,0 +1,31 @@
+/// 033 — Fibonacci com cache explícito.
+///
+/// Guarda resultados num vetor e reaproveita (memoização manual).
+
+/// fib com tabela `memo` onde -1 significa "não calculado".
+fn fib_memo(mut memo: vec, n: i32) -> i32 {
+    if memo[n] != -1 {
+        return memo[n];
+    }
+    let v = fib_memo(&memo, n - 1) + fib_memo(&memo, n - 2);
+    memo[n] = v;
+    return v;
+}
+
+/// Cria a tabela e calcula `fib(n)`.
+fn fib(n: i32) -> i32 {
+    if n < 2 {
+        return n;
+    }
+    let mut memo = vec![0, 1];
+    let mut i: i32 = 2;
+    while i <= n {
+        vec::push(memo, -1);
+        i = i + 1;
+    }
+    return fib_memo(&memo, n);
+}
+
+fn main() {
+    println(fib(10));
+}

@@ -1,0 +1,90 @@
+# Lumen Standard Library — Time Module (Reference .lum)
+# Mirrors the Python API in pylumen/timex.py
+
+module timex
+
+  # Return current Unix timestamp.
+  fun now(): Float
+    return time()
+
+  # Return current Unix timestamp (UTC).
+  fun now_utc(): Float
+    return time()
+
+  # Convert Unix timestamp to datetime.
+  fun from_timestamp(ts: Float): DateTime
+    return DateTime.fromtimestamp(ts)
+
+  # Convert datetime to Unix timestamp.
+  fun to_timestamp(dt: DateTime? = nil): Float
+    if dt == nil then dt = DateTime.now()
+    return dt.timestamp()
+
+  # Format datetime as string.
+  fun format_date(dt: DateTime? = nil, fmt: String = "%Y-%m-%d %H:%M:%S"): String
+    if dt == nil then dt = DateTime.now()
+    return dt.strftime(fmt)
+
+  # Parse date string to datetime.
+  fun parse_date(s: String, fmt: String = "%Y-%m-%d %H:%M:%S"): DateTime
+    return DateTime.strptime(s, fmt)
+
+  # Create timedelta from seconds.
+  fun timedelta(seconds: Float): Duration
+    return Duration(seconds=seconds)
+
+  # Add timedelta to datetime.
+  fun date_add(dt: DateTime?, delta: Duration): DateTime
+    if dt == nil then dt = DateTime.now()
+    return dt + delta
+
+  # Return timedelta between two datetimes.
+  fun date_diff(dt1: DateTime, dt2: DateTime): Duration
+    return dt1 - dt2
+
+  # Sleep for given seconds.
+  fun sleep(seconds: Float): Unit
+    time.sleep(seconds)
+
+  # Return date portion as string.
+  fun ldate(dt: DateTime? = nil): String
+    if dt == nil then dt = DateTime.now()
+    return dt.strftime("%Y-%m-%d")
+
+  # Return time portion as string.
+  fun ltime(dt: DateTime? = nil): String
+    if dt == nil then dt = DateTime.now()
+    return dt.strftime("%H:%M:%S")
+
+  # Return full datetime as string.
+  fun ldatetime(dt: DateTime? = nil): String
+    if dt == nil then dt = DateTime.now()
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+  # Get year.
+  fun year(dt: DateTime? = nil): Int
+    if dt == nil then dt = DateTime.now()
+    return dt.year
+
+  # Get month.
+  fun month(dt: DateTime? = nil): Int
+    if dt == nil then dt = DateTime.now()
+    return dt.month
+
+  # Get day.
+  fun day(dt: DateTime? = nil): Int
+    if dt == nil then dt = DateTime.now()
+    return dt.day
+
+  # Get weekday (0=Monday, 6=Sunday).
+  fun weekday(dt: DateTime? = nil): Int
+    if dt == nil then dt = DateTime.now()
+    return dt.weekday()
+
+  # Get number of days in month.
+  fun days_in_month(year: Int, month: Int): Int
+    return calendar.monthrange(year, month)[1]
+
+  # Check if year is a leap year.
+  fun is_leap_year(year: Int): Bool
+    return calendar.isleap(year)

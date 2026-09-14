@@ -1,0 +1,207 @@
+/// 023 — Árvore binária de busca com `struct`, `enum` e `match`.
+///
+/// Implementa BST simplificada sobre `Vec` ordenado (representação
+/// por array). `Arvore` guarda `dados: Vec` e `n: i32`. `Ordem` é
+/// o enum de percurso. `inserir` mantém ordenação, `buscar` usa
+/// busca binária, `percorrer` usa `match`.
+
+use std::vec;
+use std::str;
+
+/// Ordem de percurso.
+enum Ordem {
+    InOrdem,
+    PreOrdem,
+    PosOrdem,
+}
+
+/// Árvore binária de busca (array ordenado).
+struct Arvore {
+    dados: Vec,
+    n: i32,
+}
+
+impl Arvore {
+    /// Cria árvore vazia.
+    fn nova() -> Arvore {
+        return Arvore { dados: vec![], n: 0 };
+    }
+
+    /// Cria a partir de vetor (copia).
+    fn de_vec(v: Vec<i32>) -> Arvore {
+        let mut ordenado = vec![];
+        let mut i: i32 = 0;
+        let len = vec::len(v);
+        while i < len {
+            let x = match vec::get(v, i) {
+                Some(val) => val,
+                None => 0,
+            };
+            ordenado = Arvore::inserir_ord(ordenado, x);
+            i = i + 1;
+        }
+        return Arvore { dados: ordenado, n: vec::len(ordenado) };
+    }
+
+    /// Insere mantendo ordenação.
+    fn inserir_ord(v: Vec<i32>, valor: i32) -> Vec<i32> {
+        if vec::len(v) == 0 {
+            return vec![valor];
+        }
+        let mut res = vec![];
+        let mut inserido: bool = false;
+        let mut i: i32 = 0;
+        let len = vec::len(v);
+        while i < len {
+            let x = match vec::get(v, i) {
+                Some(val) => val,
+                None => 0,
+            };
+            if inserido == false {
+                if valor <= x {
+                    res = vec::push(res, valor);
+                    inserido = true;
+                }
+            }
+            res = vec::push(res, x);
+            i = i + 1;
+        }
+        if inserido == false {
+            res = vec::push(res, valor);
+        }
+        return res;
+    }
+
+    /// Insere valor na árvore.
+    fn inserir(a: Arvore, valor: i32) -> Arvore {
+        let novo_dados = Arvore::inserir_ord(a.dados, valor);
+        return Arvore { dados: novo_dados, n: vec::len(novo_dados) };
+    }
+
+    /// Busca valor (binária).
+    fn buscar(a: Arvore, alvo: i32) -> bool {
+        let mut ini: i32 = 0;
+        let mut fim: i32 = a.n - 1;
+        while ini <= fim {
+            let meio: i32 = (ini + fim) / 2;
+            let v = match vec::get(a.dados, meio) {
+                Some(x) => x,
+                None => 0,
+            };
+            if v == alvo {
+                return true;
+            }
+            if v < alvo {
+                ini = meio + 1;
+            } else {
+                fim = meio - 1;
+            }
+        }
+        return false;
+    }
+
+    /// Mínimo (primeiro elemento).
+    fn minimo(a: Arvore) -> Option<i32> {
+        if a.n == 0 {
+            return None;
+        }
+        return vec::get(a.dados, 0);
+    }
+
+    /// Máximo (último elemento).
+    fn maximo(a: Arvore) -> Option<i32> {
+        if a.n == 0 {
+            return None;
+        }
+        return vec::get(a.dados, a.n - 1);
+    }
+
+    /// Altura estimada (log2).
+    fn altura(a: Arvore) -> i32 {
+        if a.n <= 1 {
+            return a.n;
+        }
+        let mut h: i32 = 0;
+        let mut nodes: i32 = a.n;
+        while nodes > 0 {
+            nodes = nodes / 2;
+            h = h + 1;
+        }
+        return h;
+    }
+
+    /// Percurso segundo `ordem`.
+    fn percorrer(a: Arvore, ordem: Ordem) -> Vec<i32> {
+        return match ordem {
+            Ordem::InOrdem => a.dados,
+            Ordem::PreOrdem => Arvore::reverso(a.dados),
+            Ordem::PosOrdem => Arvore::reverso(a.dados),
+        };
+    }
+
+    /// Inverte vetor.
+    fn reverso(v: Vec<i32>) -> Vec<i32> {
+        let mut res = vec![];
+        let mut i: i32 = vec::len(v) - 1;
+        while i >= 0 {
+            let x = match vec::get(v, i) {
+                Some(val) => val,
+                None => 0,
+            };
+            res = vec::push(res, x);
+            i = i - 1;
+        }
+        return res;
+    }
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut arv = Arvore::nova();
+    arv = Arvore::inserir(arv, 5);
+    arv = Arvore::inserir(arv, 3);
+    arv = Arvore::inserir(arv, 8);
+    arv = Arvore::inserir(arv, 1);
+    arv = Arvore::inserir(arv, 4);
+
+    println("n = " + str::from_int(arv.n));
+    println("altura ~ " + str::from_int(Arvore::altura(arv)));
+
+    match Arvore::minimo(arv) {
+        Some(v) => println("min = " + str::from_int(v)),
+        None => println("vazia"),
+    }
+    match Arvore::maximo(arv) {
+        Some(v) => println("max = " + str::from_int(v)),
+        None => println("vazia"),
+    }
+
+    println("buscar 4? " + str::from_int(if Arvore::buscar(arv, 4) { 1 } else { 0 }));
+    println("buscar 7? " + str::from_int(if Arvore::buscar(arv, 7) { 1 } else { 0 }));
+
+    let em_ordem = Arvore::percorrer(arv, Ordem::InOrdem());
+    let pre = Arvore::percorrer(arv, Ordem::PreOrdem());
+    println("in_ordem len = " + str::from_int(vec::len(em_ordem)));
+    println("pre_ordem len = " + str::from_int(vec::len(pre)));
+
+    let mut i: i32 = 0;
+    while i < vec::len(em_ordem) {
+        match vec::get(em_ordem, i) {
+            Some(v) => println(str::from_int(v)),
+            None => {},
+        }
+        i = i + 1;
+    }
+}
+
+#[test]
+fn testa_arvore() {
+    let arv = Arvore::nova();
+    let arv = Arvore::inserir(arv, 2);
+    let arv = Arvore::inserir(arv, 1);
+    let arv = Arvore::inserir(arv, 3);
+    assert_eq(Arvore::buscar(arv, 2), true);
+    assert_eq(Arvore::buscar(arv, 5), false);
+    assert_eq(Arvore::minimo(arv), Some(1));
+    assert_eq(Arvore::maximo(arv), Some(3));
+}

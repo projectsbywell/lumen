@@ -1,0 +1,28 @@
+/// 010 — Matemática com `std::math`.
+///
+/// `sqrt` e `fat` retornam `Result`; `pow`, `abs`, `min` e `max`
+/// são totais. A constante `math::PI` vale π.
+
+use std::math;
+
+/// Hipotenusa de catetos `a` e `b`.
+fn hip(a: f64, b: f64) -> f64 {
+    return math::sqrt(a * a + b * b);
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    println("hip(3,4) = " + str::from_float(hip(3.0, 4.0)));
+    println("2^10     = " + str::from_float(math::pow(2.0, 10.0)));
+    println("pi       = " + str::from_float(math::PI));
+    match math::fat(6) {
+        Ok(v) => println("6! = " + str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+    println("min = " + str::from_float(math::min(3.0, 7.0)));
+}
+
+#[test]
+fn testa_hip() {
+    assert_eq(hip(3.0, 4.0), 5.0);
+}

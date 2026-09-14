@@ -1,0 +1,143 @@
+/// 020 — Fila (FIFO) com `Vec` e `struct` + `impl`.
+///
+/// Fila segue FIFO: `enfileirar` insere no final, `desenfileirar`
+/// remove do começo. `frente` espreita o primeiro. Usa `Vec`,
+/// `Option` e `Result`.
+
+use std::vec;
+use std::str;
+
+/// Fila de inteiros.
+struct Fila {
+    dados: Vec,
+    tamanho: i32,
+}
+
+impl Fila {
+    /// Cria fila vazia.
+    fn nova() -> Fila {
+        return Fila { dados: vec![], tamanho: 0 };
+    }
+
+    /// Cria fila a partir de vetor.
+    fn de_vec(v: Vec<i32>) -> Fila {
+        let t = vec::len(v);
+        return Fila { dados: v, tamanho: t };
+    }
+
+    /// Quantidade de elementos.
+    fn len(f: Fila) -> i32 {
+        return f.tamanho;
+    }
+
+    /// True se vazia.
+    fn vazia(f: Fila) -> bool {
+        return f.tamanho == 0;
+    }
+
+    /// Enfileira `valor` no final.
+    fn enfileirar(f: Fila, valor: i32) -> Fila {
+        let mut novo = f.dados;
+        novo = vec::push(novo, valor);
+        return Fila { dados: novo, tamanho: f.tamanho + 1 };
+    }
+
+    /// Frente da fila sem remover.
+    fn frente(f: Fila) -> Option<i32> {
+        if f.tamanho == 0 {
+            return None;
+        }
+        return vec::get(f.dados, 0);
+    }
+
+    /// Remove a frente e devolve nova fila.
+    fn sem_frente(f: Fila) -> Fila {
+        if f.tamanho == 0 {
+            return f;
+        }
+        let mut novo = vec![];
+        let mut i: i32 = 1;
+        while i < f.tamanho {
+            let x = match vec::get(f.dados, i) {
+                Some(v) => v,
+                None => 0,
+            };
+            novo = vec::push(novo, x);
+            i = i + 1;
+        }
+        return Fila { dados: novo, tamanho: f.tamanho - 1 };
+    }
+
+    /// Desenfileira: `Some(valor)` ou `None` se vazia.
+    fn desenfileirar(f: Fila) -> Option<i32> {
+        return Fila::frente(f);
+    }
+}
+
+/// Desenfileira com `Result`.
+fn desenfileirar_ok(f: Fila) -> Result<i32, str> {
+    return match Fila::frente(f) {
+        Some(v) => Ok(v),
+        None => Err("fila vazia"),
+    };
+}
+
+/// Converte fila em string para debug.
+fn fila_para_str(f: Fila) -> str {
+    let mut s: str = "[";
+    let mut i: i32 = 0;
+    while i < f.tamanho {
+        let x = match vec::get(f.dados, i) {
+            Some(v) => v,
+            None => 0,
+        };
+        s = s + str::from_int(x);
+        if i < f.tamanho - 1 {
+            s = s + ", ";
+        }
+        i = i + 1;
+    }
+    s = s + "]";
+    return s;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut f = Fila::nova();
+    f = Fila::enfileirar(f, 10);
+    f = Fila::enfileirar(f, 20);
+    f = Fila::enfileirar(f, 30);
+
+    println("fila = " + fila_para_str(f));
+    println("tamanho = " + str::from_int(Fila::len(f)));
+
+    match Fila::frente(f) {
+        Some(v) => println("frente = " + str::from_int(v)),
+        None => println("vazia"),
+    }
+
+    let v = Fila::desenfileirar(f);
+    match v {
+        Some(x) => println("desenfileirado = " + str::from_int(x)),
+        None => println("nada"),
+    }
+    let f2 = Fila::sem_frente(f);
+    println("após desenfileirar = " + fila_para_str(f2));
+
+    match desenfileirar_ok(Fila::nova()) {
+        Ok(v) => println(str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+}
+
+#[test]
+fn testa_fila() {
+    let f = Fila::nova();
+    let f = Fila::enfileirar(f, 1);
+    let f = Fila::enfileirar(f, 2);
+    assert_eq(Fila::len(f), 2);
+    assert_eq(Fila::frente(f), Some(1));
+    let f2 = Fila::sem_frente(f);
+    assert_eq(Fila::frente(f2), Some(2));
+    assert_eq(Fila::vazia(Fila::nova()), true);
+}

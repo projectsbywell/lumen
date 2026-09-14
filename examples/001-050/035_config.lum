@@ -1,0 +1,73 @@
+/// 035 — Configuração: carregar e acessar chaves de um `Map`.
+///
+/// Um `Config` guarda pares chave=valor. `cfg_carrega` parseia
+/// linhas `KEY=valor`; `cfg_obter` busca; `cfg_inteiro` converte.
+
+use std::vec;
+use std::map;
+
+/// Configuração chave=valor.
+struct Config { dados: Map }
+
+/// Cria configuração vazia.
+fn cfg_novo() -> Config {
+    return Config { dados: map!{} };
+}
+
+/// Carrega linhas `chave=valor` separadas por `\n`.
+fn cfg_carrega(c: mut Config, texto: str) {
+    let linhas = str::split(texto, "\n");
+    let mut i = 0;
+    while i < vec::len(linhas) {
+        let linha = vec::get(linhas, i);
+        let partes = str::split(linha, "=");
+        if vec::len(partes) == 2 {
+            let chave = vec::get(partes, 0);
+            let valor = vec::get(partes, 1);
+            map::insert(c.dados, chave, valor);
+        }
+        i = i + 1;
+    }
+}
+
+/// Busca o valor de uma chave.
+fn cfg_obter(c: Config, chave: str) -> Option {
+    return map::get(c.dados, chave);
+}
+
+/// Converte o valor de uma chave para i32.
+fn cfg_inteiro(c: Config, chave: str) -> Result<i32, str> {
+    match map::get(c.dados, chave) {
+        Some(v) => str::to_int(v),
+        None => Err("chave não encontrada: " + chave),
+    }
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut cfg = cfg_novo();
+    cfg_carrega(cfg, "porta=8080\nhost=localhost\nmax=100");
+    match cfg_obter(&cfg, "host") {
+        Some(v) => println("host = " + v),
+        None => println("sem host"),
+    }
+    match cfg_inteiro(&cfg, "porta") {
+        Ok(p) => println("porta = " + str::from_int(p)),
+        Err(e) => println("erro: " + e),
+    }
+}
+
+#[test]
+fn testa_cfg_obter() {
+    let mut cfg = cfg_novo();
+    cfg_carrega(cfg, "chave=valor\nnum=42");
+    assert_eq(cfg_obter(&cfg, "chave"), Some("valor"));
+    assert_eq(cfg_obter(&cfg, "ausente"), None);
+}
+
+#[test]
+fn testa_cfg_inteiro() {
+    let mut cfg = cfg_novo();
+    cfg_carrega(cfg, "porta=3000");
+    assert_eq(cfg_inteiro(&cfg, "porta"), Ok(3000));
+}

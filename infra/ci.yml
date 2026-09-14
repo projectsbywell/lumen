@@ -1,0 +1,226 @@
+# CI do Lumen v0.4 — implementação de referência em Python 3.8+, sem dependências.
+# Copie para .github/workflows/ci.yml no repositório real.
+# NOTA: não há toolchain Rust nem binário nativo nesta versão (ver
+# LIMITACOES.md e ROADMAP v0.4); o CI valida a implementação Python real.
+name: lumen-ci
+
+"on":
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Testes unitários (v0.3)
+        run: >-
+          python3 -m unittest compiler.test_compiler
+          compiler.backend.test_backends compiler.backend.test_e2e
+          compiler.test_front_extra compiler.test_borrow
+          runtime.test_runtime stdlib.test_stdlib tools.pkg.test_pkg
+          tools.build.test_build tools.test.test_runner_self
+          tools.test.test_release
+          ide.lsp.test_lsp ide.lsp.test_server_extra
+          ide.vscode.test_dap
+          ide.playground.test_playground conformance.test_conformance
+          test_boost
+
+      - name: Suíte de conformidade (meta 100%)
+        run: python3 conformance/suite.py
+
+      - name: Cobertura de conformance/ (mínimo 80%)
+        run: |
+          python3 -m coverage run -m unittest conformance.test_conformance
+          python3 -m coverage report --include="conformance/*" --fail-under=80
+
+      - name: Toolchain Node (playground/WASM)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sintaxe JS (playground + runtime WASM)
+        run: |
+          node --check compiler/backend/wasm/runtime.js
+          python3 -m unittest ide.playground.test_playground
+
+      - name: Publica relatório de conformidade
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-${{ matrix.os }}
+          path: conformance/conformance_report.json
+
+      - name: Exemplos compilam (smoke, 66; XFAIL em allowlist)
+        run: python3 tools/test/check_examples.py
+
+      - name: Docs sincronizadas (gen.py)
+        run: |
+          python3 docs/gen.py --src docs/stdlib_api.lum --merge docs/API.md
+          git diff --exit-code -- docs/API.md || (echo "API.md dessincronizado: regenere com docs/gen.py" && exit 1)
+
+      - name: Instala reportlab (obrigatório)
+        run: pip install "reportlab==4.*"
+
+      - name: Gera PDF da documentação (obrigatório)
+        run: python3 docs/pdf.py
+
+      - name: Verifica LIVRO.pdf gerado (obrigatório)
+        run: |
+          test -f examples/book/LIVRO.pdf || (echo "erro: LIVRO.pdf ausente após docs/pdf.py" && exit 1)
+          python3 -c "import os; p='examples/book/LIVRO.pdf'; n=os.path.getsize(p); print(f'LIVRO.pdf: {n} bytes'); assert n > 50000, f'LIVRO.pdf pequeno demais: {n} bytes'"
+
+      - name: Publica PDF como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: livro-pdf-${{ matrix.os }}
+          path: examples/book/LIVRO.pdf
+          if-no-files-found: error
+
+  pages:
+    runs-on: ubuntu-latest
+    needs: build-test
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Toolchain Node (playground)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validação do playground
+        run: |
+          node --check compiler/backend/wasm/runtime.js
+          python3 -m unittest ide.playground.test_playground
+
+      - name: Monta pacote do site (site + playground + PDF)
+        run: |
+          rm -rf _site && mkdir -p _site/playground
+          cp infra/site/index.html _site/index.html
+          cp ide/playground/index.html _site/playground/index.html
+          test -f examples/book/LIVRO.pdf || (echo "erro: LIVRO.pdf ausente, gere com python3 docs/pdf.py" && exit 1)
+          cp examples/book/LIVRO.pdf _site/LIVRO.pdf
+          ls -la _site _site/playground
+
+      - name: Upload do pacote Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  build-release:
+    # Releases binárias v0.4: sdist+wheel (PyPI) + binário nativo onefile
+    # por OS (PyInstaller). Roda em todo push/PR (valida a cadeia nos 3 SO)
+    # e publica no GitHub Release APENAS em tags v* (GITHUB_REF refs/tags/v).
+    runs-on: ${{ matrix.os }}
+    needs: build-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    permissions:
+      contents: write          # gh release create/upload em tags v*
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: "Instala ferramentas de build (offline-safe: PyPI interno)"
+        run: pip install build pyinstaller
+
+      - name: Build sdist + wheel (Python puro, sem deps)
+        run: python3 -m build --outdir dist_py
+
+      - name: Build binário nativo (PyInstaller onefile)
+        run: >-
+          pyinstaller --onefile --noconfirm --clean --name lumen
+          --hidden-import conformance.suite
+          --hidden-import tools.test.lumen_test
+          --hidden-import tools.pkg.lumen_pkg
+          --hidden-import tools.repl.repl
+          --hidden-import docs.gen
+          --hidden-import tools.test.check_examples
+          lumen_cli.py
+
+      - name: Reúne artefatos em dist/
+        shell: bash
+        run: |
+          mv dist_py/* dist/
+          rmdir dist_py
+          ls -la dist/
+
+      - name: Smoke do binário (--help)
+        shell: bash
+        run: |
+          BIN="dist/lumen${{ runner.os == 'Windows' && '.exe' || '' }}"
+          "$BIN" --help
+          "$BIN" version
+
+      - name: Smoke do binário (compila examples/001_hello.lum)
+        shell: bash
+        run: |
+          BIN="dist/lumen${{ runner.os == 'Windows' && '.exe' || '' }}"
+          "$BIN" build examples/001_hello.lum ir > /tmp/hello_ir.txt 2>&1
+          test -s /tmp/hello_ir.txt || (echo "erro: IR vazio do 001_hello.lum" && exit 1)
+          "$BIN" run examples/001_hello.lum
+
+      - name: Checksums sha256
+        shell: bash
+        run: |
+          find dist -maxdepth 1 -type f -print0 | xargs -0 sha256sum > dist/SHA256SUMS.txt
+          cat dist/SHA256SUMS.txt
+
+      - name: Publica checagem de release (inline de dist/ nos 3 SO)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-release-${{ matrix.os }}
+          path: dist/
+          if-no-files-found: error
+
+      - name: Cria/atualiza GitHub Release (somente tags v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "Lumen $TAG" \
+              --notes "Ver infra/releases/NOTAS_v0.4.0.md e infra/RELEASES.md" \
+              --repo "$GITHUB_REPOSITORY"
+          fi
+          gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" | head -20

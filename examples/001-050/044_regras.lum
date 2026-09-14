@@ -1,0 +1,73 @@
+/// 044 — Motor de regras com `match` e `if` guards.
+///
+/// Cada regra tem uma prioridade e uma condição. O motor
+/// avalia todas as regras em ordem decrescente de prioridade
+/// e aplica a primeira cuja condição é verdadeira.
+
+/// Regra de negócio com prioridade e tipo.
+enum Regra {
+    Alta(i32, str),
+    Media(i32, str),
+    Baixa(i32, str),
+}
+
+/// Avalia se o valor satisfaz a condição da regra.
+fn satisfaz(r: Regra, valor: i32) -> bool {
+    return match r {
+        Alta(p, _) if valor >= p => true,
+        Alta(_, _) => false,
+        Media(p, _) if valor >= p => true,
+        Media(_, _) => false,
+        Baixa(p, _) if valor >= p => true,
+        Baixa(_, _) => false,
+    };
+}
+
+/// Encontra a primeira regra aplicável.
+fn aplicar(regras: Vec<Regra>, valor: i32) -> str {
+    let mut i: i32 = 0;
+    let n = vec::len(regras);
+    while i < n {
+        let r = vec::get(regras, i);
+        match r {
+            Some(reg) => {
+                if satisfaz(reg, valor) {
+                    return match reg {
+                        Alta(_, msg) => msg,
+                        Media(_, msg) => msg,
+                        Baixa(_, msg) => msg,
+                    };
+                }
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return "sem regra";
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let regras = vec![
+        Alta(90, "premium"),
+        Media(50, "standard"),
+        Baixa(0, "basico"),
+    ];
+
+    println("valor 95 = " + aplicar(&regras, 95));
+    println("valor 60 = " + aplicar(&regras, 60));
+    println("valor 10 = " + aplicar(&regras, 10));
+    println("valor 50 = " + aplicar(&regras, 50));
+}
+
+#[test]
+fn testa_regras() {
+    let regras = vec![
+        Alta(90, "premium"),
+        Media(50, "standard"),
+        Baixa(0, "basico"),
+    ];
+    assert_eq(aplicar(&regras, 95), "premium");
+    assert_eq(aplicar(&regras, 50), "standard");
+    assert_eq(aplicar(&regras, 5), "basico");
+}

@@ -1,0 +1,39 @@
+/// 003 — Fibonacci iterativo e recursivo.
+///
+/// Compara as duas versões e mostra `while`, `let mut` e tuplas de
+/// atribuição via variáveis temporárias.
+
+/// Fibonacci recursivo (simples, lento para `n` grande).
+fn fib_rec(n: i32) -> i32 {
+    if n <= 1 {
+        return n;
+    }
+    return fib_rec(n - 1) + fib_rec(n - 2);
+}
+
+/// Fibonacci iterativo.
+fn fib_iter(n: i32) -> i32 {
+    let mut a: i32 = 0;
+    let mut b: i32 = 1;
+    let mut i: i32 = 0;
+    while i < n {
+        let t = a + b;
+        a = b;
+        b = t;
+        i = i + 1;
+    }
+    return a;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    for i in 0..10 {
+        println(str::from_int(fib_iter(i)));
+    }
+    assert_eq(fib_rec(10), fib_iter(10));
+}
+
+#[test]
+fn testa_fib() {
+    assert_eq(fib_iter(10), 55);
+}

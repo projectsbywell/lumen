@@ -1,0 +1,35 @@
+/// 038 — Retry com backoff.
+///
+/// Tenta `n` vezes dobrando a espera (simulada por contador).
+
+/// Simula operação que falha `falhas` vezes antes de dar `Ok`.
+fn instavel(falhas: i32, tentativa: i32) -> Result<str, str> {
+    if tentativa > falhas {
+        return Ok("pronto");
+    }
+    return Err("falha transitória");
+}
+
+/// Tenta até `max` vezes; espera dobra a cada falha.
+fn com_retry(falhas: i32, max: i32) -> Result<str, str> {
+    let mut espera: i32 = 1;
+    let mut t: i32 = 1;
+    while t <= max {
+        match instavel(falhas, t) {
+            Ok(v) => return Ok(v),
+            Err(_) => {
+                println("tentando de novo...");
+                espera = espera * 2;
+            },
+        }
+        t = t + 1;
+    }
+    return Err("esgotou tentativas");
+}
+
+fn main() {
+    match com_retry(2, 5) {
+        Ok(v) => println(v),
+        Err(e) => println(e),
+    }
+}

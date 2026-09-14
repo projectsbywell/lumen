@@ -1,0 +1,28 @@
+/// 032 — Teste de primalidade.
+///
+/// Divisão por tentativa até a raiz quadrada (via `i * i <= n`).
+
+/// Verdadeiro se `n` é primo.
+fn eh_primo(n: i32) -> bool {
+    if n < 2 {
+        return false;
+    }
+    let mut i: i32 = 2;
+    while i * i <= n {
+        if n % i == 0 {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+fn main() {
+    let mut n: i32 = 2;
+    while n < 20 {
+        if eh_primo(n) {
+            println(n);
+        }
+        n = n + 1;
+    }
+}

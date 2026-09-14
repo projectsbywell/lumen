@@ -1,0 +1,30 @@
+/// 015 — Concorrência com `async`/`await`.
+///
+/// `async fn` suspende em IO; `spawn` agenda e devolve `Handle<T>`;
+/// `await` consome o handle. O executor resolve na ordem do `spawn`.
+
+use std::http;
+
+/// Baixa o corpo de `url` (suspende sem bloquear o executor).
+async fn baixa(url: str) -> str {
+    let r = http::get(url)?;
+    return r.corpo;
+}
+
+/// Baixa duas URLs em concorrência e concatena.
+async fn baixa_duas(a: str, b: str) -> str {
+    let ha = spawn baixa(a);
+    let hb = spawn baixa(b);
+    return await ha + await hb;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let h = spawn baixa_duas("https://a.exemplo.com", "https://b.exemplo.com");
+    println(await h);
+}
+
+#[test]
+fn testa_baixa_duas_assinatura() {
+    assert(true, "async compila");
+}

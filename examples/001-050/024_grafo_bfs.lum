@@ -1,0 +1,172 @@
+/// 024 — Grafo e BFS com `Vec`, `Map` e `while`.
+///
+/// Grafo não-direcionado representado por lista de adjacência
+/// `Map<i32, Vec<i32>>`. `bfs` percorre em largura usando fila
+/// (`Vec` como fila), `vec::get`, `map::get`, `map::insert` e
+/// `vec::push`.
+
+use std::vec;
+use std::map;
+use std::str;
+
+/// Cria grafo vazio.
+fn grafo_novo() -> Map<i32, Vec<i32>> {
+    return map!{};
+}
+
+/// Adiciona vértice isolado (sem arestas).
+fn adicionar_vertice(g: Map<i32, Vec<i32>>, v: i32) -> Map<i32, Vec<i32>> {
+    if map::has(g, v) {
+        return g;
+    }
+    map::insert(g, v, vec![]);
+    return g;
+}
+
+/// Adiciona aresta não-direcionada u—v.
+fn adicionar_aresta(g: Map<i32, Vec<i32>>, u: i32, v: i32) -> Map<i32, Vec<i32>> {
+    let mut adj_u = match map::get(g, u) {
+        Some(lst) => lst,
+        None => vec![],
+    };
+    let mut adj_v = match map::get(g, v) {
+        Some(lst) => lst,
+        None => vec![],
+    };
+    adj_u = vec::push(adj_u, v);
+    adj_v = vec::push(adj_v, u);
+    map::insert(g, u, adj_u);
+    map::insert(g, v, adj_v);
+    return g;
+}
+
+/// Verifica se `v` está em `visitados`.
+fn visitado(visitados: Vec<i32>, v: i32) -> bool {
+    let n = vec::len(visitados);
+    let mut i: i32 = 0;
+    while i < n {
+        let x = match vec::get(visitados, i) {
+            Some(val) => val,
+            None => 0,
+        };
+        if x == v {
+            return true;
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+/// BFS a partir de `inicio`. Devolve ordem de visita.
+fn bfs(g: Map<i32, Vec<i32>>, inicio: i32) -> Vec<i32> {
+    let mut fila = vec![inicio];
+    let mut visitados = vec![inicio];
+    let mut idx: i32 = 0;
+    while idx < vec::len(fila) {
+        let atual = match vec::get(fila, idx) {
+            Some(v) => v,
+            None => 0,
+        };
+        let vizinhos = match map::get(g, atual) {
+            Some(lst) => lst,
+            None => vec![],
+        };
+        let mut j: i32 = 0;
+        let m = vec::len(vizinhos);
+        while j < m {
+            let nb = match vec::get(vizinhos, j) {
+                Some(v) => v,
+                None => 0,
+            };
+            if visitado(&visitados, nb) == false {
+                fila = vec::push(fila, nb);
+                visitados = vec::push(visitados, nb);
+            }
+            j = j + 1;
+        }
+        idx = idx + 1;
+    }
+    return visitados;
+}
+
+/// Distância (número de arestas) via BFS; -1 se inalcançável.
+fn distancia(g: Map<i32, Vec<i32>>, origem: i32, destino: i32) -> i32 {
+    if origem == destino {
+        return 0;
+    }
+    let mut fila = vec![origem];
+    let mut dist = map!{};
+    map::insert(dist, origem, 0);
+    let mut visitados = vec![origem];
+    let mut idx: i32 = 0;
+    while idx < vec::len(fila) {
+        let atual = match vec::get(fila, idx) {
+            Some(v) => v,
+            None => 0,
+        };
+        let d_atual = match map::get(dist, atual) {
+            Some(d) => d,
+            None => 0,
+        };
+        let vizinhos = match map::get(g, atual) {
+            Some(lst) => lst,
+            None => vec![],
+        };
+        let mut j: i32 = 0;
+        let m = vec::len(vizinhos);
+        while j < m {
+            let nb = match vec::get(vizinhos, j) {
+                Some(v) => v,
+                None => 0,
+            };
+            if visitado(&visitados, nb) == false {
+                if nb == destino {
+                    return d_atual + 1;
+                }
+                fila = vec::push(fila, nb);
+                visitados = vec::push(visitados, nb);
+                map::insert(dist, nb, d_atual + 1);
+            }
+            j = j + 1;
+        }
+        idx = idx + 1;
+    }
+    return -1;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut g = grafo_novo();
+    g = adicionar_aresta(g, 1, 2);
+    g = adicionar_aresta(g, 1, 3);
+    g = adicionar_aresta(g, 2, 4);
+    g = adicionar_aresta(g, 3, 4);
+    g = adicionar_aresta(g, 4, 5);
+
+    let ordem = bfs(g, 1);
+    println("bfs de 1 = " + str::from_int(vec::len(ordem)) + " visitados");
+    let mut i: i32 = 0;
+    while i < vec::len(ordem) {
+        match vec::get(ordem, i) {
+            Some(v) => println(str::from_int(v)),
+            None => {},
+        }
+        i = i + 1;
+    }
+
+    println("dist 1->5 = " + str::from_int(distancia(&g, 1, 5)));
+    println("dist 1->4 = " + str::from_int(distancia(&g, 1, 4)));
+    println("dist 2->3 = " + str::from_int(distancia(&g, 2, 3)));
+    println("dist 1->99 = " + str::from_int(distancia(&g, 1, 99)));
+}
+
+#[test]
+fn testa_bfs() {
+    let mut g = grafo_novo();
+    g = adicionar_aresta(g, 1, 2);
+    g = adicionar_aresta(g, 2, 3);
+    let ordem = bfs(g, 1);
+    assert_eq(vec::len(ordem), 3);
+    assert_eq(distancia(&g, 1, 3), 2);
+    assert_eq(distancia(&g, 1, 99), -1);
+}

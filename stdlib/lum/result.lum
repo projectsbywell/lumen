@@ -1,0 +1,62 @@
+# Lumen Standard Library — Result/Option Module (Reference .lum)
+# Mirrors the Python API in pylumen/result.py and runtime/rtlib.py
+# Semantics: `?` unwraps Ok / propagates Err; `panic(msg)` aborts.
+
+module result
+
+  # Unrecoverable error raised by `panic`.
+  type LumenPanic extends Error
+
+  # Abort with an unrecoverable error.
+  fun panic(msg: String): Never
+    raise LumenPanic(msg)
+
+  # Option<T> — Some(value) or None.
+  enum Option<T> { Some(T), None }
+
+  # True if the option holds a value.
+  fun is_some<T>(o: Option<T>): Bool
+    match o
+      Some(_) -> return true
+      None -> return false
+
+  # True if the option is empty.
+  fun is_none<T>(o: Option<T>): Bool
+    return not is_some(o)
+
+  # Unwrap or abort with `panic` on None.
+  fun unwrap<T>(o: Option<T>): T
+    match o
+      Some(v) -> return v
+      None -> panic("unwrap on None")
+
+  # Unwrap or fall back to `default`.
+  fun unwrap_or<T>(o: Option<T>, default: T): T
+    match o
+      Some(v) -> return v
+      None -> return default
+
+  # Result<T, E> — Ok(value) or Err(error).
+  enum Result<T, E> { Ok(T), Err(E) }
+
+  # True if the result is Ok.
+  fun is_ok<T, E>(r: Result<T, E>): Bool
+    match r
+      Ok(_) -> return true
+      Err(_) -> return false
+
+  # True if the result is Err.
+  fun is_err<T, E>(r: Result<T, E>): Bool
+    return not is_ok(r)
+
+  # Unwrap Ok or abort with `panic` on Err.
+  fun unwrap<T, E>(r: Result<T, E>): T
+    match r
+      Ok(v) -> return v
+      Err(e) -> panic("unwrap on Err: " + str(e))
+
+  # The `?` operator: unwrap Ok or propagate Err to the caller.
+  fun q<T, E>(r: Result<T, E>): T
+    match r
+      Ok(v) -> return v
+      Err(e) -> return Err(e)?

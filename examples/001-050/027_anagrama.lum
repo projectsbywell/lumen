@@ -1,0 +1,44 @@
+/// 027 — Anagrama por ordenação.
+///
+/// Duas palavras são anagramas se suas letras ordenadas coincidem.
+/// Aqui com vetores de inteiros (pesos das letras).
+
+/// Ordena por bolha e devolve o vetor.
+fn ordena(mut v: vec) -> vec {
+    let mut i: i32 = 0;
+    while i < vec::len(v) {
+        let mut j: i32 = i + 1;
+        while j < vec::len(v) {
+            if v[i] > v[j] {
+                let t = v[i];
+                v[i] = v[j];
+                v[j] = t;
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+    return v;
+}
+
+/// Compara dois vetores já ordenados.
+fn iguais(a: vec, b: vec) -> bool {
+    if vec::len(a) != vec::len(b) {
+        return false;
+    }
+    let mut i: i32 = 0;
+    while i < vec::len(a) {
+        if a[i] != b[i] {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+fn main() {
+    let a = ordena(vec![3, 1, 2]);
+    let b = ordena(vec![2, 3, 1]);
+    println("anagramas?");
+    println(iguais(a, b));
+}

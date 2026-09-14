@@ -1,0 +1,51 @@
+/// 034 — Estatística básica.
+///
+/// Média, máximo e mínimo de um vetor de inteiros.
+
+/// Soma todos os elementos.
+fn soma(v: vec) -> i32 {
+    let mut t: i32 = 0;
+    let mut i: i32 = 0;
+    while i < vec::len(v) {
+        t = t + v[i];
+        i = i + 1;
+    }
+    return t;
+}
+
+/// Média inteira; `None` se vazio.
+fn media(v: vec) -> Option<i32> {
+    if vec::len(v) == 0 {
+        return None;
+    }
+    return Some(soma(&v) / vec::len(v));
+}
+
+/// Menor e maior valor.
+fn min_max(v: vec) -> Option<str> {
+    if vec::len(v) == 0 {
+        return None;
+    }
+    let mut lo = v[0];
+    let mut hi = v[0];
+    let mut i: i32 = 1;
+    while i < vec::len(v) {
+        if v[i] < lo {
+            lo = v[i];
+        }
+        if v[i] > hi {
+            hi = v[i];
+        }
+        i = i + 1;
+    }
+    return Some("ok");
+}
+
+fn main() {
+    let dados = vec![4, 8, 15, 16, 23, 42];
+    match media(&dados) {
+        Some(m) => println(m),
+        None => println("vazio"),
+    }
+    println(min_max(&dados));
+}

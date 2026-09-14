@@ -1,0 +1,126 @@
+# Lumen Standard Library — Math Module (Reference .lum)
+# Mirrors the Python API in pylumen/mathx.py
+
+module mathx
+
+  # Basic arithmetic operations.
+  fun add(a: Number, b: Number): Number
+    return a + b
+
+  fun sub(a: Number, b: Number): Number
+    return a - b
+
+  fun mul(a: Number, b: Number): Number
+    return a * b
+
+  fun div(a: Number, b: Number): Float
+    if b == 0 then raise ZeroDivisionError("division by zero")
+    return a / b
+
+  fun mod(a: Number, b: Number): Number
+    if b == 0 then raise ZeroDivisionError("modulo by zero")
+    return a % b
+
+  fun pow(base: Number, exp: Number): Number
+    return base ** exp
+
+  # Matrix operations.
+  fun mat_add(a: Matrix, b: Matrix): Matrix
+    if rows(a) != rows(b) or cols(a) != cols(b)
+      raise ValueError("matrix dimensions must match")
+    return [[a[i][j] + b[i][j] for j in range(cols(a))] for i in range(rows(a))]
+
+  fun mat_mul(a: Matrix, b: Matrix): Matrix
+    if cols(a) != rows(b)
+      raise ValueError("cannot multiply matrices with incompatible dimensions")
+    return [[sum(a[i][k] * b[k][j] for k in range(cols(a))) for j in range(cols(b))] for i in range(rows(a))]
+
+  fun mat_transpose(m: Matrix): Matrix
+    if empty(m) then return []
+    return [[m[i][j] for i in range(rows(m))] for j in range(cols(m))]
+
+  fun mat_scalar_mul(m: Matrix, scalar: Number): Matrix
+    return [[cell * scalar for cell in row] for row in m]
+
+  # Vector operations.
+  fun vec_dot(a: Vector, b: Vector): Number
+    if len(a) != len(b) then raise ValueError("vectors must have same length")
+    return sum(x * y for x, y in zip(a, b))
+
+  fun vec_norm(v: Vector): Float
+    return sqrt(sum(x * x for x in v))
+
+  # Statistics.
+  fun mean(data: Vector): Float
+    if empty(data) then raise ValueError("cannot compute mean of empty data")
+    return sum(data) / len(data)
+
+  fun median(data: Vector): Float
+    if empty(data) then raise ValueError("cannot compute median of empty data")
+    s = sort(data)
+    n = len(s)
+    mid = n / 2
+    if n % 2 == 0
+      return (s[mid - 1] + s[mid]) / 2
+    return float(s[mid])
+
+  fun var(data: Vector): Float
+    if empty(data) then raise ValueError("cannot compute variance of empty data")
+    m = mean(data)
+    return sum((x - m) ** 2 for x in data) / len(data)
+
+  fun std(data: Vector): Float
+    return sqrt(var(data))
+
+  fun sum(data: Vector): Number
+    return sum(data)
+
+  fun min(data: Vector): Number
+    if empty(data) then raise ValueError("cannot compute min of empty data")
+    return minimum(data)
+
+  fun max(data: Vector): Number
+    if empty(data) then raise ValueError("cannot compute max of empty data")
+    return maximum(data)
+
+  # Math functions.
+  fun sqrt(x: Number): Float
+    if x < 0 then raise ValueError("cannot compute sqrt of negative number")
+    return math.sqrt(x)
+
+  fun factorial(n: Int): Int
+    if n < 0 then raise ValueError("factorial not defined for negative numbers")
+    return math.factorial(n)
+
+  fun gcd(a: Int, b: Int): Int
+    return math.gcd(a, b)
+
+  fun lcm(a: Int, b: Int): Int
+    if a == 0 or b == 0 then return 0
+    return abs(a * b) / gcd(a, b)
+
+  fun sin(x: Number): Float
+    return math.sin(x)
+
+  fun cos(x: Number): Float
+    return math.cos(x)
+
+  fun tan(x: Number): Float
+    return math.tan(x)
+
+  fun asin(x: Number): Float
+    return math.asin(x)
+
+  fun acos(x: Number): Float
+    return math.acos(x)
+
+  fun atan(x: Number): Float
+    return math.atan(x)
+
+  fun atan2(y: Number, x: Number): Float
+    return math.atan2(y, x)
+
+  # Constants.
+  val pi: Float = 3.141592653589793
+  val e: Float = 2.718281828459045
+  val ln2: Float = 0.6931471805599453

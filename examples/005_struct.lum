@@ -1,0 +1,32 @@
+/// 005 — Structs e métodos `impl`.
+///
+/// Um `struct` agrupa campos; `impl` adiciona métodos. `self` é o
+/// primeiro parâmetro dos métodos de instância.
+
+use std::io;
+
+/// Ponto no plano cartesiano.
+struct Ponto { x: f64, y: f64 }
+
+impl Ponto {
+    /// Construtor.
+    fn novo(x: f64, y: f64) -> Ponto {
+        return Ponto { x: x, y: y };
+    }
+
+    /// Distância até a origem.
+    fn norma(self) -> f64 {
+        return math::sqrt(self.x * self.x + self.y * self.y);
+    }
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let p = Ponto::novo(3.0, 4.0);
+    println("norma = " + str::from_float(p.norma()));
+}
+
+#[test]
+fn testa_norma() {
+    assert_eq(Ponto::novo(3.0, 4.0).norma(), 5.0);
+}

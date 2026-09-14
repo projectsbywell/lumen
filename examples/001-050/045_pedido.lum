@@ -1,0 +1,98 @@
+/// 045 — Processamento de pedido com `Result` e `Option`.
+///
+/// Um pedido contém itens e tem status. Funções de validação
+/// retornam `Result`, e a busca de itens usa `Option`.
+
+use std::str;
+use std::vec;
+
+/// Item do pedido.
+struct Item {
+    nome: str,
+    preco: f64,
+    quantidade: i32,
+}
+
+/// Status do pedido.
+enum Status {
+    Aberto,
+    Confirmado,
+    Finalizado,
+}
+
+/// Custo total de um item.
+fn custo_item(nome: str, preco: f64, qty: i32) -> Result<f64, str> {
+    if qty <= 0 {
+        return Err("quantidade inválida para " + nome);
+    }
+    if preco < 0.0 {
+        return Err("preço negativo para " + nome);
+    }
+    let q: f64 = qty;
+    return Ok(preco * q);
+}
+
+/// Calcula o total do pedido.
+fn total_pedido(itens: Vec<Item>) -> Result<f64, str> {
+    let mut total: f64 = 0.0;
+    let mut i: i32 = 0;
+    let n = vec::len(itens);
+    while i < n {
+        let item = vec::get(itens, i);
+        match item {
+            Some(it) => {
+                let c = custo_item(it.nome, it.preco, it.quantidade)?;
+                total = total + c;
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return Ok(total);
+}
+
+/// Procura item por nome; retorna `Option`.
+fn encontrar_item(itens: Vec<Item>, nome: str) -> Option<Item> {
+    let mut i: i32 = 0;
+    let n = vec::len(itens);
+    while i < n {
+        let item = vec::get(itens, i);
+        match item {
+            Some(it) => {
+                if it.nome == nome {
+                    return Some(it);
+                }
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return None;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let itens = vec![
+        Item { nome: "livro", preco: 29.9, quantidade: 2 },
+        Item { nome: "caneta", preco: 1.5, quantidade: 5 },
+    ];
+
+    match total_pedido(&itens) {
+        Ok(t) => println("total = " + str::from_float(t)),
+        Err(e) => println("erro: " + e),
+    }
+
+    match encontrar_item(&itens, "livro") {
+        Some(_) => println("item encontrado"),
+        None => println("item não encontrado"),
+    }
+}
+
+#[test]
+fn testa_pedido() {
+    let itens = vec![
+        Item { nome: "livro", preco: 29.9, quantidade: 2 },
+        Item { nome: "caneta", preco: 1.5, quantidade: 5 },
+    ];
+    assert_eq(total_pedido(&itens), Ok(67.3));
+}

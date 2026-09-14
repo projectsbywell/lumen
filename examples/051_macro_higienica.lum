@@ -1,0 +1,46 @@
+/// 051 — Macro higiênica que PROVA não-captura por shadowing.
+///
+/// A macro `soma_um!` tem binding local `n` (gensym'd para __hygN).
+/// A `n` do chamador não é capturada nem movida: a expansão usa
+/// `__hyg1` como nome interno, garantindo isolamento total.
+
+/// Soma 1 ao argumento. O binding `n` é gensym'd para não capturar
+/// a `n` do escopo do chamador.
+macro soma_um(x) {
+    let n = x + 1;
+    return n;
+}
+
+/// Macro que multiplica por 2, com binding `valor` gensym'd.
+macro dobro(x) {
+    let valor = x * 2;
+    return valor;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let n = 10;
+    let resultado = soma_um!(n);
+    println("resultado = " + str::from_int(resultado));
+    println("n = " + str::from_int(n));
+
+    let valor = 21;
+    let d = dobro!(valor);
+    println("dobro = " + str::from_int(d));
+    println("valor = " + str::from_int(valor));
+}
+
+#[test]
+fn testa_soma_um_nao_captura() {
+    let n = 100;
+    let r = soma_um!(n);
+    assert_eq(r, 101);
+    assert_eq(n, 100);
+}
+
+#[test]
+fn testa_dobro_nao_captura() {
+    let valor = 50;
+    assert_eq(dobro!(valor), 100);
+    assert_eq(valor, 50);
+}

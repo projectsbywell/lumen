@@ -1,0 +1,29 @@
+/// 039 — Paginação de vetor.
+///
+/// Devolve a fatia `[pagina * tam, ...]` sem sair dos limites.
+
+/// Página `p` (base 0) de tamanho `tam`.
+fn pagina(v: vec, p: i32, tam: i32) -> vec {
+    let mut fora = vec![];
+    let ini = p * tam;
+    let fim = ini + tam;
+    let mut i = ini;
+    while i < fim {
+        if i < vec::len(v) {
+            vec::push(fora, v[i]);
+        }
+        i = i + 1;
+    }
+    return fora;
+}
+
+/// Quantas páginas existem.
+fn num_paginas(v: vec, tam: i32) -> i32 {
+    return (vec::len(v) + tam - 1) / tam;
+}
+
+fn main() {
+    let v = vec![1, 2, 3, 4, 5];
+    println(num_paginas(&v, 2));
+    println(pagina(&v, 1, 2));
+}

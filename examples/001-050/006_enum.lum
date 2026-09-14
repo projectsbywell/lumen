@@ -1,0 +1,32 @@
+/// 006 — Enums com payload + `match` exaustivo.
+///
+/// Cada variante pode carregar valores. O `match` destrutura a
+/// variante e liga os campos a variáveis.
+
+/// Forma geométrica.
+enum Forma {
+    Circulo(f64),
+    Retangulo(f64, f64),
+    Ponto,
+}
+
+/// Área da forma.
+fn area(f: Forma) -> f64 {
+    return match f {
+        Forma::Circulo(r) => 3.14159 * r * r,
+        Forma::Retangulo(w, h) => w * h,
+        Forma::Ponto => 0.0,
+    };
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    println("círculo = " + str::from_float(area(Forma::Circulo(1.0))));
+    println("ret     = " + str::from_float(area(Forma::Retangulo(3.0, 4.0))));
+}
+
+#[test]
+fn testa_area() {
+    assert_eq(area(Forma::Ponto), 0.0);
+    assert_eq(area(Forma::Retangulo(2.0, 5.0)), 10.0);
+}

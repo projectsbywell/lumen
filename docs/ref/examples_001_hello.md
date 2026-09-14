@@ -1,0 +1,18 @@
+# `examples/001_hello.lum`
+
+001 — Hello, Lumen.
+
+O programa mínimo: `fn main` é a porta de entrada e `println`
+imprime texto com nova linha. Rode com `lumen run 001_hello.lum`.
+
+## Índice
+
+- `fn` [main](#main)
+
+## `fn` main
+
+```lum
+fn main() {
+```
+
+Ponto de entrada do programa.

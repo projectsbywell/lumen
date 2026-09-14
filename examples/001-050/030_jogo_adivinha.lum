@@ -1,0 +1,30 @@
+/// 030 — Jogo de adivinhação.
+///
+/// Laço com dicas "maior/menor" até acertar o segredo.
+
+/// Uma rodada: devolve tentativas usadas.
+fn rodada(segredo: i32, chutes: vec) -> i32 {
+    let mut t: i32 = 0;
+    let mut i: i32 = 0;
+    while i < vec::len(chutes) {
+        t = t + 1;
+        let c = chutes[i];
+        if c == segredo {
+            println("acertou!");
+            return t;
+        }
+        if c < segredo {
+            println("maior...");
+        } else {
+            println("menor...");
+        }
+        i = i + 1;
+    }
+    return t;
+}
+
+fn main() {
+    let n = rodada(7, vec![3, 9, 7]);
+    println("tentativas:");
+    println(n);
+}

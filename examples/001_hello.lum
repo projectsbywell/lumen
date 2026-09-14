@@ -1,0 +1,9 @@
+/// 001 — Hello, Lumen.
+///
+/// O programa mínimo: `fn main` é a porta de entrada e `println`
+/// imprime texto com nova linha. Rode com `lumen run 001_hello.lum`.
+
+/// Ponto de entrada do programa.
+fn main() {
+    println("Olá, Lumen!");
+}

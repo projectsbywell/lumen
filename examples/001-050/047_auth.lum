@@ -1,0 +1,92 @@
+/// 047 — Sistema de autenticação com `Result`, `Option` e `match`.
+///
+/// Login valida credenciais, tokens são `Option`, e sessões
+/// são gerenciadas com `Result` para erros recuperáveis.
+
+use std::str;
+
+/// Papel do usuário no sistema.
+enum Papel {
+    Admin,
+    Editor,
+    Leitor,
+}
+
+/// Resultado de uma tentativa de login.
+enum AuthResult {
+    Sucesso(str, Papel),
+    Falha(str),
+}
+
+/// Usuário registrado.
+struct Usuario {
+    login: str,
+    senha_hash: str,
+    papel: Papel,
+}
+
+/// Verifica credenciais e retorna `AuthResult`.
+fn login(usuario: Usuario, senha: str) -> AuthResult {
+    if usuario.senha_hash == senha {
+        return AuthResult::Sucesso(usuario.login, usuario.papel);
+    }
+    return AuthResult::Falha("credenciais inválidas");
+}
+
+/// Gera token opcional para sessão; `None` se falhar.
+fn gerar_token(usuario: Usuario, papel: Papel) -> Option<str> {
+    return match papel {
+        Papel::Admin => Some("admin-token"),
+        Papel::Editor => Some("editor-token"),
+        Papel::Leitor => Some("reader-token"),
+    };
+}
+
+/// Verifica se o token é válido; retorna `Result`.
+fn verificar_token(token: Option<str>) -> Result<str, str> {
+    return match token {
+        Some(t) => Ok(t),
+        None => Err("token ausente"),
+    };
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let admin = Usuario {
+        login: "admin",
+        senha_hash: "admin123",
+        papel: Papel::Admin,
+    };
+
+    match login(&admin, "admin123") {
+        AuthResult::Sucesso(nome, papel) => {
+            println("login ok: " + nome);
+            let token = gerar_token(&admin, papel);
+            match verificar_token(token) {
+                Ok(t) => println("token = " + t),
+                Err(e) => println("erro: " + e),
+            }
+        },
+        AuthResult::Falha(msg) => println("falha: " + msg),
+    }
+
+    let usuario2 = Usuario {
+        login: "guest",
+        senha_hash: "wrong",
+        papel: Papel::Leitor,
+    };
+    match login(usuario2, "wrong") {
+        AuthResult::Sucesso(_, _) => println("invasor"),
+        AuthResult::Falha(msg) => println("falha esperada: " + msg),
+    }
+}
+
+#[test]
+fn testa_auth() {
+    let u = Usuario {
+        login: "alice",
+        senha_hash: "secret",
+        papel: Papel::Editor,
+    };
+    assert_eq(login(u, "secret"), AuthResult::Sucesso("alice", Papel::Editor));
+}

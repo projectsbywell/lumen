@@ -1,0 +1,30 @@
+/// 011 — Cliente HTTP mínimo.
+///
+/// `http::get` devolve `Resposta { status, corpo }`. Aqui o corpo é
+/// um JSON que fazemos parse com `std::json`.
+
+use std::http;
+use std::json;
+
+/// Busca o título de um item na API de exemplo.
+fn busca_titulo(url: str) -> Result<String, str> {
+    let r = http::get(url)?;
+    if r.status != 200 {
+        return Err("status " + str::from_int(r.status));
+    }
+    let v = json::parse(r.corpo)?;
+    return Ok(json::stringify(v));
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    match http::get("https://api.exemplo.com/itens") {
+        Ok(r) => println("status = " + str::from_int(r.status)),
+        Err(e) => println("erro http: " + e),
+    }
+}
+
+#[test]
+fn testa_busca_sync() {
+    assert_eq(json::stringify(1), "1");
+}

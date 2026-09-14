@@ -1,0 +1,67 @@
+# Lumen Standard Library — IO Module (Reference .lum)
+# Mirrors the Python API in pylumen/io.py
+
+module io
+
+  # Lumen I/O wrapper.
+  type LumenIO
+    fun write(data: String): Int
+      return self.stream.write(data)
+
+    fun writeline(data: String = ""): Int
+      return self.write(data + "\n")
+
+    fun flush(): Unit
+      self.stream.flush()
+
+  # Lumen file handle wrapper.
+  type LumenFile
+    fun read(size: Int = -1): String
+      return self.file.read(size)
+
+    fun readline(): String
+      return self.file.readline()
+
+    fun readlines(): List<String>
+      return self.file.readlines()
+
+    fun write(data: String): Int
+      return self.file.write(data)
+
+    fun writelines(lines: List<String>): Int
+      return self.file.writelines(lines)
+
+    fun close(): Unit
+      self.file.close()
+
+  # Read entire file as string.
+  fun read_file(filepath: String): String
+    with open(filepath, "r") as f
+      return f.read()
+
+  # Write string to file. Returns characters written.
+  fun write_file(filepath: String, data: String): Int
+    with open(filepath, "w") as f
+      return f.write(data)
+
+  # Read file and return list of lines.
+  fun read_lines(filepath: String): List<String>
+    with open(filepath, "r") as f
+      return f.readlines()
+
+  # Write list of lines to file.
+  fun write_lines(filepath: String, lines: List<String>): Int
+    with open(filepath, "w") as f
+      return f.writelines(lines)
+
+  # Read from stdin.
+  fun read_stdin(): String
+    return stdin.read()
+
+  # Print to stdout.
+  fun print_stdout(data: String): Unit
+    print(data, end="")
+
+  # Print to stderr.
+  fun print_err(data: String): Unit
+    print(data, file=stderr, end="")

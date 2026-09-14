@@ -1,0 +1,63 @@
+/// 036 — Log: níveis, formatação e arquivo.
+///
+/// Um logger simples com níveis `INFO`, `AVISO` e `ERRO`. Cada
+/// mensagem é formatada com prefixo e gravada em arquivo.
+
+use std::fs;
+use std::vec;
+
+/// Nível de severidade do log.
+enum Nivel { Info(str), Aviso(str), Erro(str) }
+
+/// Formata uma mensagem de log com prefixo de nível.
+fn log_formatar(nivel: Nivel) -> str {
+    return match nivel {
+        Nivel::Info(msg) => "[INFO] " + msg,
+        Nivel::Aviso(msg) => "[AVISO] " + msg,
+        Nivel::Erro(msg) => "[ERRO] " + msg,
+    };
+}
+
+/// Registra uma mensagem no arquivo `log.txt`.
+fn log_registrar(texto: str) -> Result<i32, str> {
+    fs::write_arquivo("log.txt", texto + "\n")?;
+    return Ok(1);
+}
+
+/// Registra múltiplas mensagens e devolve quantas foram gravadas.
+fn log_registrar_varias(mensagens: Vec<Nivel>) -> i32 {
+    let mut i = 0;
+    let mut count = 0;
+    while i < vec::len(mensagens) {
+        let msg = vec::get(mensagens, i);
+        let linha = log_formatar(msg);
+        let resultado = log_registrar(linha);
+        let ok = match resultado {
+            Ok(n) => n,
+            Err(_) => {
+                println("falha ao gravar log");
+                0
+            },
+        };
+        count = count + ok;
+        i = i + 1;
+    }
+    return count;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let msgs = vec![
+        Nivel::Info("servidor iniciado"),
+        Nivel::Aviso("memória baixa"),
+        Nivel::Erro("conexão perdida"),
+    ];
+    let n = log_registrar_varias(msgs);
+    println("logs gravados = " + str::from_int(n));
+}
+
+#[test]
+fn testa_log_formatar() {
+    assert_eq(log_formatar(Nivel::Info("ok")), "[INFO] ok");
+    assert_eq(log_formatar(Nivel::Erro("falha")), "[ERRO] falha");
+}

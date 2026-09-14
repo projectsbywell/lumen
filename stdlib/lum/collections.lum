@@ -1,0 +1,171 @@
+# Lumen Standard Library — Collections Module (Reference .lum)
+# Mirrors the Python API in pylumen/collections.py
+
+module collections
+
+  # Dynamic array with Lumen API methods.
+  type Vec<T> extends List<T>
+    fun push(item: T): Unit
+      self.append(item)
+
+    fun pop(index: Int = -1): T
+      return self.remove(index)
+
+    fun unshift(item: T): Unit
+      self.insert(0, item)
+
+    fun shift(): T
+      return self.remove(0)
+
+    fun size(): Int
+      return self.len()
+
+    fun empty(): Bool
+      return self.len() == 0
+
+    fun sort(reverse: Bool = false): Unit
+      self.sort(reverse)
+
+    fun map<F>(func: (T) -> F): Vec<F>
+      return Vec([func(x) for x in self])
+
+    fun filter(func: (T) -> Bool): Vec<T>
+      return Vec([x for x in self if func(x)])
+
+    fun reduce<F>(func: (F, T) -> F, initial: F?): F
+      if initial == nil
+        var result = self[0]
+        for item in self.slice(1)
+          result = func(result, item)
+        return result
+      var result = initial
+      for item in self
+        result = func(result, item)
+      return result
+
+    fun for_each(func: (T) -> Unit): Unit
+      for item in self
+        func(item)
+
+    fun find(func: (T) -> Bool): T?
+      for item in self
+        if func(item) then return item
+      return nil
+
+    fun contains(item: T): Bool
+      return item in self
+
+    fun join(sep: String = ""): String
+      return sep.join([str(x) for x in self])
+
+    fun reversed(): Vec<T>
+      return Vec(reverse(self))
+
+    fun slice(start: Int = 0, end: Int?): Vec<T>
+      if end == nil then return Vec(self[start:])
+      return Vec(self[start:end])
+
+  # Key-value map with Lumen API methods.
+  type Mapa<K, V> extends Dict<K, V>
+    fun set(key: K, value: V): Unit
+      self[key] = value
+
+    fun get(key: K, default: V?): V
+      return self.get(key, default)
+
+    fun remove(key: K): V
+      return self.pop(key)
+
+    fun has(key: K): Bool
+      return key in self
+
+    fun keys(): List<K>
+      return list(self.keys())
+
+    fun values(): List<V>
+      return list(self.values())
+
+    fun entries(): List<(K, V)>
+      return list(self.items())
+
+    fun size(): Int
+      return self.len()
+
+    fun empty(): Bool
+      return self.len() == 0
+
+    fun for_each(func: (K, V) -> Unit): Unit
+      for k, v in self.items()
+        func(k, v)
+
+    fun map_values<F>(func: (V) -> F): Mapa<K, F>
+      return Mapa({k: func(v) for k, v in self.items()})
+
+    fun filter(func: (K, V) -> Bool): Mapa<K, V>
+      return Mapa({k: v for k, v in self.items() if func(k, v)})
+
+  # Unique element collection.
+  type Set<T> extends HashSet<T>
+    fun add(item: T): Unit
+      self.insert(item)
+
+    fun remove(item: T): Unit
+      self.discard(item)
+
+    fun has(item: T): Bool
+      return item in self
+
+    fun size(): Int
+      return self.len()
+
+    fun empty(): Bool
+      return self.len() == 0
+
+    fun union(other: Set<T>): Set<T>
+      return Set(self | other)
+
+    fun intersection(other: Set<T>): Set<T>
+      return Set(self & other)
+
+    fun difference(other: Set<T>): Set<T>
+      return Set(self - other)
+
+    fun is_subset(other: Set<T>): Bool
+      return self <= other
+
+    fun is_superset(other: Set<T>): Bool
+      return self >= other
+
+    fun for_each(func: (T) -> Unit): Unit
+      for item in self
+        func(item)
+
+  # FIFO queue data structure.
+  type Fila<T>
+    private _data: Deque<T>
+
+    fun __init__(items: List<T>? = nil): Unit
+      self._data = Deque(items or [])
+
+    fun enqueue(item: T): Unit
+      self._data.append(item)
+
+    fun dequeue(): T
+      if self.is_empty() then raise IndexError("dequeue from empty Fila")
+      return self._data.popleft()
+
+    fun peek(): T
+      if self.is_empty() then raise IndexError("peek from empty Fila")
+      return self._data[0]
+
+    fun size(): Int
+      return self._data.len()
+
+    fun is_empty(): Bool
+      return self._data.len() == 0
+
+    fun to_list(): List<T>
+      return list(self._data)
+
+    fun clear(): Unit
+      self._data.clear()

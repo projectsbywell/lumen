@@ -1,0 +1,57 @@
+# pyproject.toml — empacotamento Python do Lumen (v0.4.0).
+# sdist + wheel via `python3 -m build`; binário nativo via PyInstaller
+# (infra/ci.yml, job build-release). Dependências: nenhuma (stdlib).
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lumen"
+version = "0.4.0"
+description = "Linguagem pequena e estática: match exaustivo, 3 backends (vm/c/wasm), ecossistema (pkg TLS/audit, DAP, playground, releases)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [{ name = "Lumen Lang Team" }]
+keywords = ["linguagem", "compilador", "vm", "wasm", "static", "match", "dap"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Software Development :: Interpreters",
+]
+
+[project.scripts]
+lumen = "lumen_cli:main"
+
+[project.urls]
+Repository = "https://github.com/lumen-lang/lumen"
+
+# Módulo único na raiz (entry point do script `lumen`).
+# O resto do código vive em pacotes namespace (sem __init__.py), descobertos
+# abaixo por find_namespace (namespaces = true).
+[tool.setuptools]
+py-modules = ["lumen_cli"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+namespaces = true
+exclude = [
+    "docs*",          # geradores + Markdown (repo-local, não empacotado)
+    "infra*",         # CI/Docker/site/releases (repo-local)
+    "examples*",      # .lum + livro (repo-local)
+    "tests*",
+    "registry_data*",
+    "build*",
+    "dist*",
+    "__pycache__*",
+    "*.egg-info*",
+]

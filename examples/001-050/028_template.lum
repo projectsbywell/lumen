@@ -1,0 +1,21 @@
+/// 028 — Mini template engine.
+///
+/// Substitui `{nome}` por valores de um mapa, varrendo a string.
+
+/// Troca todas as ocorrências de `{chave}` em `t`.
+fn render(t: str, chaves: vec, valores: vec) -> str {
+    let mut saida: str = t;
+    let mut i: i32 = 0;
+    while i < vec::len(chaves) {
+        let alvo: str = str::concat("{", str::concat(chaves[i], "}"));
+        saida = str::troca(saida, alvo, valores[i]);
+        i = i + 1;
+    }
+    return saida;
+}
+
+fn main() {
+    let chaves = vec!["nome", "cidade"];
+    let valores = vec!["Lia", "Recife"];
+    println(render("Olá, {nome} de {cidade}!", chaves, valores));
+}

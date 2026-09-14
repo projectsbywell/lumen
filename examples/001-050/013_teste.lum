@@ -1,0 +1,30 @@
+/// 013 — Testes com `#[test]`.
+///
+/// `lumen test` descobre toda `fn` marcada com `#[test]` e roda com
+/// `assert`, `assert_eq` e `assert_ne`. Falha = panic com a diferença.
+
+/// Soma dois inteiros.
+fn soma(a: i32, b: i32) -> i32 {
+    return a + b;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    println("soma = " + str::from_int(soma(2, 3)));
+}
+
+#[test]
+fn testa_soma_basica() {
+    assert_eq(soma(2, 3), 5);
+}
+
+#[test]
+fn testa_soma_zero() {
+    assert_eq(soma(0, 0), 0);
+    assert_ne(soma(1, 1), 3);
+}
+
+#[test]
+fn testa_soma_negativa() {
+    assert(soma(-2, -3) < 0, "soma de negativos é negativa");
+}

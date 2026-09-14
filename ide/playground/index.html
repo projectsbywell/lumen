@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumen Playground</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; margin: 0; padding: 16px; }
+  h1 { color: #c586c0; font-size: 20px; margin: 0 0 12px; }
+  .bar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+  select, button { font-family: monospace; font-size: 14px; padding: 6px 12px;
+    background: #3c3c3c; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
+  button:hover { background: #4c4c4c; }
+  button.run { background: #0e639c; border-color: #0e639c; }
+  button.run:hover { background: #1177bb; }
+  #editor { width: 100%; height: 280px; background: #252526; color: #d4d4d4;
+    border: 1px solid #555; border-radius: 4px; padding: 10px; font-size: 14px;
+    font-family: monospace; resize: vertical; tab-size: 4; }
+  #output { width: 100%; min-height: 120px; background: #111; color: #9cdcfe;
+    border: 1px solid #555; border-radius: 4px; padding: 10px; font-size: 14px;
+    white-space: pre-wrap; margin-top: 8px; }
+  #output .err { color: #f48771; }
+  .tuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-top: 12px; }
+  .tut { background: #252526; border: 1px solid #555; border-radius: 4px; padding: 10px; }
+  .tut h3 { margin: 0 0 6px; color: #4ec9b0; font-size: 14px; }
+  .tut p { font-size: 12px; color: #bbb; }
+  .tut button { font-size: 12px; margin-top: 6px; }
+  .hint { font-size: 12px; color: #888; margin-top: 8px; }
+  a { color: #4ec9b0; }
+</style>
+</head>
+<body>
+<h1>◈ Lumen Playground</h1>
+<div class="bar">
+  <select id="examples" aria-label="Exemplo">
+    <option value="hello">hello — print</option>
+    <option value="fib">fibonacci demo</option>
+    <option value="match">match + expressões</option>
+  </select>
+  <button class="run" id="run">▶ Rodar</button>
+  <button id="share">🔗 Compartilhar (URL hash)</button>
+  <button id="clear">Limpar saída</button>
+  <span id="engine" class="hint" title="Motor de execução ativo">motor: JS</span>
+</div>
+<textarea id="editor" spellcheck="false"></textarea>
+<div id="output" aria-live="polite"></div>
+
+<div class="tuts">
+  <div class="tut" id="tut1">
+    <h3>Tutorial 1 — Variáveis e print</h3>
+    <p><code>let x = 2 + 3 * 4;</code> declara. <code>print(x);</code> imprime.
+    Clique em <b>Carregar</b> e depois <b>Rodar</b>; tente mudar os números.</p>
+    <button data-tut="tut1">Carregar tutorial 1</button>
+  </div>
+  <div class="tut" id="tut2">
+    <h3>Tutorial 2 — Fibonacci</h3>
+    <p><code>fib(n)</code> é builtin da demo. <code>fib(10)</code> → <code>55</code>.
+    Carregue, rode e experimente <code>fib(20)</code>.</p>
+    <button data-tut="tut2">Carregar tutorial 2</button>
+  </div>
+  <div class="tut" id="tut3">
+    <h3>Tutorial 3 — match e expressões</h3>
+    <p>O playground avalia expressões Lumen (<code>+ - * / % ()</code>, comparações,
+    <code>match</code> simples). Carregue o exemplo e edite os braços do <code>match</code>.</p>
+    <button data-tut="tut3">Carregar tutorial 3</button>
+  </div>
+</div>
+<p class="hint">Suporte do interpretador JS mínimo: <code>let [mut] nome = expr;</code>,
+<code>print(expr);</code> / <code>println(expr);</code>, expressões aritméticas,
+<code>fib(n)</code>, <code>len("str")</code>, <code>match</code> de 1 nível e comentários
+<code>//</code>. Compartilhar gera <code>#c=&lt;base64&gt;</code> na URL.</p>
+
+<script>
+"use strict";
+const EXAMPLES = {
+  hello: '// Olá, Lumen!\nlet nome = "mundo";\nprint("olá, " + nome);\nlet x = 2 + 3 * 4;\nprintln(x);\n',
+  fib: '// Fibonacci demo\nfn fib(n: int) -> int {\n    // builtin da demo: fib(n)\n    return fib(n);\n}\n\nlet i = 0;\nfor i in 0..10 {\n    print(fib(i));\n}\nprintln(fib(10));\n',
+  match: '// match + expressões\nlet x = 2;\nlet rotulo = match x {\n    0 => "zero",\n    1 => "um",\n    _ => "outro",\n};\nprintln(rotulo);\nprintln((10 - 2) * 3 == 24);\n'
+};
+const TUTS = {
+  tut1: '// Tutorial 1 — variáveis e print\nlet x = 2 + 3 * 4;\nprint(x);          // 14\nlet y = (x - 4) / 2;\nprintln(y);        // 5\n',
+  tut2: '// Tutorial 2 — fibonacci\n// fib(n) é builtin: fib(0)=0, fib(1)=1, fib(2)=1, ...\nprint(fib(10));    // 55\nprintln(fib(20));  // 6765\n',
+  tut3: '// Tutorial 3 — match e expressões\nlet x = 2;\nlet r = match x {\n    0 => "zero",\n    2 => "dois!",\n    _ => "outro",\n};\nprintln(r);\nprintln(1 + 2 * 3 == 7);\n'
+};
+
+// ---------- safe base64 (unicode) ----------
+function b64e(s){ return btoa(unescape(encodeURIComponent(s))); }
+function b64d(s){ return decodeURIComponent(escape(atob(s))); }
+
+// ---------- minimal Lumen expression interpreter ----------
+function fib(n){ n = Math.floor(n); if(n<=0) return 0; if(n===1) return 1; let a=0,b=1; for(let i=1;i<n;i++){ const t=a+b; a=b; b=t; } return b; }
+
+function tokenize(src){
+  const toks=[]; let i=0;
+  while(i<src.length){
+    const c=src[i];
+    if(/\s/.test(c)){ i++; continue; }
+    if(c==='"'){ let j=i+1,s=''; while(j<src.length && src[j]!=='"'){ if(src[j]==='\\'&&j+1<src.length){ s+=src[j]+src[j+1]; j+=2; } else { s+=src[j]; j++; } } if(j>=src.length) throw new Error('String não terminada'); toks.push({t:'str',v:JSON.parse('"'+s+'"')}); i=j+1; continue; }
+    if(/[0-9]/.test(c)){ let j=i; while(j<src.length && /[0-9_]/.test(src[j])) j++; if(src[j]==='.' && /[0-9]/.test(src[j+1]||'')){ j++; while(j<src.length && /[0-9_]/.test(src[j])) j++; } toks.push({t:'num',v:parseFloat(src.slice(i,j).replace(/_/g,''))}); i=j; continue; }
+    if(/[A-Za-z_]/.test(c)){ let j=i; while(j<src.length && /[A-Za-z0-9_]/.test(src[j])) j++; toks.push({t:'id',v:src.slice(i,j)}); i=j; continue; }
+    const two=src.substr(i,2);
+    if(['==','!=','<=','>=','=>','->','..','&&','||'].includes(two)){ toks.push({t:'op',v:two}); i+=2; continue; }
+    if('+-*/%(){}[],;<>!?:'.includes(c)){ toks.push({t:'op',v:c}); i++; continue; }
+    throw new Error("Caractere inválido: '"+c+"'");
+  }
+  return toks;
+}
+
+function makeParser(toks, env, out){
+  let p=0;
+  function peek(){ return toks[p]; }
+  function next(){ return toks[p++]; }
+  function expect(v){ const t=next(); if(!t||t.v!==v) throw new Error("Esperava '"+v+"'"); return t; }
+  function parseExpr(){ return parseOr(); }
+  function parseOr(){ let l=parseAnd(); while(peek()&&peek().v==='||'){ next(); const r=parseAnd(); l=(l||r)?1:0; } return l; }
+  function parseAnd(){ let l=parseCmp(); while(peek()&&peek().v==='&&'){ next(); const r=parseCmp(); l=(l&&r)?1:0; } return l; }
+  function parseCmp(){ let l=parseAdd(); const t=peek(); if(t&&['==','!=','<','>','<=','>='].includes(t.v)){ next(); const r=parseAdd(); switch(t.v){ case '==': return l==r?1:0; case '!=': return l!=r?1:0; case '<': return l<r?1:0; case '>': return l>r?1:0; case '<=': return l<=r?1:0; case '>=': return l>=r?1:0; } } return l; }
+  function parseAdd(){ let l=parseMul(); while(peek()&&(peek().v==='+'||peek().v==='-')){ const o=next().v; const r=parseMul(); if(typeof l==='string'||typeof r==='string'){ if(o==='+') l=String(l)+String(r); else throw new Error('Operação inválida p/ string'); } else l=o==='+'?l+r:l-r; } return l; }
+  function parseMul(){ let l=parseUnary(); while(peek()&&(peek().v==='*'||peek().v==='/'||peek().v==='%')){ const o=next().v; const r=parseUnary(); l=o==='*'?l*r:o==='/'?l/r:l%r; } return l; }
+  function parseUnary(){ const t=peek(); if(t&&t.v==='-'){ next(); return -parseUnary(); } if(t&&t.v==='!'){ next(); return parseUnary()?0:1; } return parsePrimary(); }
+  function parsePrimary(){
+    const t=next(); if(!t) throw new Error('Expressão incompleta');
+    if(t.t==='num') return t.v;
+    if(t.t==='str') return t.v;
+    if(t.t==='id'){
+      if(t.v==='true') return 1; if(t.v==='false'||t.v==='nil') return 0;
+      if(t.v==='match'){ return parseMatchTail(); }
+      if(peek()&&peek().v==='('){ next(); const args=[]; if(!(peek()&&peek().v===')')){ args.push(parseExpr()); while(peek()&&peek().v===','){ next(); args.push(parseExpr()); } } expect(')'); return callFn(t.v,args); }
+      if(t.v in env) return env[t.v];
+      throw new Error("Nome desconhecido: '"+t.v+"'");
+    }
+    if(t.v==='('){ const v=parseExpr(); expect(')'); return v; }
+    throw new Error("Token inesperado: '"+t.v+"'");
+  }
+  function parseMatchTail(){
+    const subj=parseExpr(); expect('{');
+    let val=0, matched=false;
+    while(!(peek()&&peek().v==='}')){
+      let arm;
+      if(peek()&&peek().t==='id'&&peek().v==='_'){ next(); arm={wild:true}; }
+      else if(peek()&&peek().t==='str'){ arm={lit:next().v}; }
+      else if(peek()&&peek().t==='num'){ arm={lit:next().v}; }
+      else throw new Error('Braço de match inválido');
+      expect('=>'); const v=parseExpr();
+      if(!matched && (arm.wild || arm.lit==subj)){ val=v; matched=true; }
+      if(peek()&&peek().v===',') next();
+    }
+    expect('}'); return val;
+  }
+  function callFn(name,args){
+    if(name==='fib'){ if(args.length!==1) throw new Error('fib(n) espera 1 arg'); return fib(args[0]); }
+    if(name==='len'){ const a=args[0]; return typeof a==='string'?a.length:Number(a); }
+    if(name==='print'||name==='println'){ out.push(args.map(fmt).join(' ')); return 0; }
+    throw new Error("Função desconhecida: '"+name+"'");
+  }
+  function fmt(v){ return typeof v==='number'?(Number.isInteger(v)?String(v):String(v)):String(v); }
+  return { parseExpr, rest(){ return p<toks.length; } };
+}
+
+function runLumen(src){
+  const out=[]; const env={};
+  // strip line comments respecting strings
+  const lines=src.split('\n').map(line=>{
+    let r='',s=false,esc=false;
+    for(let i=0;i<line.length;i++){ const c=line[i];
+      if(s){ r+=c; if(esc)esc=false; else if(c==='\\')esc=true; else if(c==='"')s=false; }
+      else { if(c==='"'){s=true;r+=c;} else if(c==='/'&&line[i+1]==='/') break; else r+=c; }
+    } return r;
+  });
+  // remove fn definitions (demo supports builtin fib); keep body simple
+  let code=lines.join('\n');
+  code=code.replace(/fn\s+[A-Za-z_][A-Za-z0-9_]*\s*\([^)]*\)[^{]*\{/g,'');
+  const stmts=splitTop(code,';');
+  for(let raw of stmts){
+    raw=raw.trim(); if(!raw) continue;
+    // for i in a..b { body } — unroll textual
+    let m=raw.match(/^for\s+([A-Za-z_][A-Za-z0-9_]*)\s+in\s+(.+?)\.\.(.+?)\s*\{\s*([\s\S]*?)\s*\}?$/);
+    if(m){
+      const v=m[1];
+      const lo=evalExpr(m[2].trim(),env,out), hi=evalExpr(m[3].trim(),env,out);
+      for(let k=Math.floor(lo);k<hi;k++){ env[v]=k; execBlock(m[4],env,out); }
+      continue;
+    }
+    // strip lone braces
+    const s2=raw.replace(/[{}]/g,'').trim(); if(!s2) continue;
+    execStmt(s2,env,out);
+  }
+  return out;
+}
+function splitTop(s,sep){ const out=[]; let d=0,q=null,cur=''; for(let i=0;i<s.length;i++){ const c=s[i]; if(q){ cur+=c; if(c==='\\'&&i+1<s.length){ cur+=s[i+1]; i++; } else if(c===q) q=null; continue; } if(c==='"'||c==="'"){ q=c; cur+=c; continue; } if(c==='('||c==='{'||c==='[') d++; if(c===')'||c==='}'||c===']') d=Math.max(0,d-1); if(c===sep&&d===0){ out.push(cur); cur=''; continue; } cur+=c; } out.push(cur); return out; }
+function evalExpr(expr,env,out){
+  const toks=tokenize(expr); const P=makeParser(toks,env,out); const v=P.parseExpr();
+  if(P.rest()) throw new Error('Expressão com resto inválido');
+  return v;
+}
+function execBlock(block,env,out){ for(const s of splitTop(block,';')){ const t=s.trim(); if(t) execStmt(t,env,out); } }
+function execStmt(stmt,env,out){
+  let m=stmt.match(/^(let|const)\s+(mut\s+)?([A-Za-z_][A-Za-z0-9_]*)(\s*:\s*[A-Za-z_][A-Za-z0-9_]*)?\s*=\s*([\s\S]+)$/);
+  if(m){ env[m[3]]=evalExpr(m[5],env,out); return; }
+  m=stmt.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([\s\S]+)$/);
+  if(m){ env[m[1]]=evalExpr(m[2],env,out); return; }
+  m=stmt.match(/^(print|println)\s*\(([\s\S]*)\)$/);
+  if(m){ const arg=m[2].trim(); if(!arg){ out.push(''); return; } const parts=splitTop(arg,','); const P0=makeParser(tokenize(parts[0]),env,[]); const vals=[fmtVal(P0.parseExpr())]; for(let k=1;k<parts.length;k++){ const Pk=makeParser(tokenize(parts[k]),env,[]); vals.push(fmtVal(Pk.parseExpr())); } out.push(vals.join(' ')); return; }
+  if(/^(return|break|continue)\b/.test(stmt)) return;
+  out.push(fmtVal(evalExpr(stmt,env,out)));
+}
+function fmtVal(v){ return typeof v==='number'?(Number.isInteger(v)?String(v):String(v)):String(v); }
+
+// ---------- UI ----------
+const editor=document.getElementById('editor');
+const output=document.getElementById('output');
+const sel=document.getElementById('examples');
+function show(lines){ output.innerHTML=''; for(const l of lines){ const d=document.createElement('div'); d.textContent=l; output.appendChild(d); } }
+function showErr(e){ output.innerHTML=''; const d=document.createElement('div'); d.className='err'; d.textContent='Erro: '+e.message; output.appendChild(d); }
+function load(name){ editor.value=EXAMPLES[name]||''; updateHash(false); }
+document.getElementById('run').onclick=()=>{ try{ show(runCurrent(editor.value)); }catch(e){ showErr(e); } };
+document.getElementById('clear').onclick=()=>{ output.innerHTML=''; };
+document.getElementById('share').onclick=()=>{
+  location.hash='c='+b64e(editor.value);
+  try{ navigator.clipboard.writeText(location.href); }catch(e){}
+  show(['Link de compartilhamento copiado:', location.href]);
+};
+sel.onchange=()=>load(sel.value);
+document.querySelectorAll('[data-tut]').forEach(b=>{ b.onclick=()=>{ editor.value=TUTS[b.dataset.tut]; updateHash(false); }; });
+function updateHash(replace){ try{ if(replace) location.hash='c='+b64e(editor.value); }catch(e){} }
+// ---------- WASM client (opt-in, sem dependências) ----------
+// Se ./lumen.wasm existir (export run(src_ptr,len)->out_ptr/len ou
+// run_lumen(src)->str), usa WASM; senão cai para o interpretador JS.
+let wasmMod=null, wasmRun=null;
+const engineBadge=document.getElementById('engine');
+async function tryLoadWasm(){
+  try{
+    const r=await fetch('./lumen.wasm',{method:'GET'});
+    if(!r.ok) return;
+    const bytes=await r.arrayBuffer();
+    const mod=await WebAssembly.compile(bytes);
+    // imports mínimos: env.print(i32)->void + memória compartilhada
+    const mem=new WebAssembly.Memory({initial:16,maximum:256});
+    let outText='';
+    const invoke=(ptr,len)=>{
+      const u8=new Uint8Array(mem.buffer,ptr,len);
+      outText+=new TextDecoder().decode(u8);
+    };
+    const inst=await WebAssembly.instantiate(mod,{env:{memory:mem,print:invoke,log:invoke}});
+    // convenção: exported run(ptr,len)->i32 len-out + out_ptr(); ou run_lumen
+    if(inst.exports.run&&inst.exports.out_ptr){
+      wasmMod=inst; wasmRun=(src)=>{
+        outText='';
+        const enc=new TextEncoder().encode(src);
+        const inPtr=inst.exports.alloc?inst.exports.alloc(enc.length):0;
+        new Uint8Array(mem.buffer).set(enc,inPtr);
+        const n=inst.exports.run(inPtr,enc.length);
+        const op=inst.exports.out_ptr();
+        return new TextDecoder().decode(new Uint8Array(mem.buffer,op,n)).split('\n');
+      };
+    } else if(inst.exports.run_lumen){
+      wasmMod=inst; wasmRun=(src)=>String(inst.exports.run_lumen(src)).split('\n');
+    }
+    if(wasmRun&&engineBadge) engineBadge.textContent='motor: WASM';
+  }catch(e){ /* fallback silencioso para JS */ }
+}
+tryLoadWasm();
+
+function runCurrent(src){
+  if(wasmRun){ try{ return wasmRun(src); }catch(e){ /* fallback JS */ } }
+  return runLumen(src);
+}
+
+// ---------- share: atualiza #c= ao digitar (debounce 500ms) ----------
+let hashT=null;
+editor.addEventListener('input',()=>{
+  clearTimeout(hashT);
+  hashT=setTimeout(()=>{ try{ history.replaceState(null,'','#c='+b64e(editor.value)); }catch(e){} },500);
+});
+(function init(){
+  if(location.hash.startsWith('#c=')){ try{ editor.value=b64d(location.hash.slice(3)); return; }catch(e){} }
+  editor.value=EXAMPLES.hello;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+/// 007 — Coleções: `Vec<T>` e `Map<K, V>`.
+///
+/// `vec![...]` cria vetores, `map!{...}` cria mapas. `vec::map` e
+/// `vec::filter` transformam coleções sem `mut`.
+
+use std::vec;
+use std::map;
+
+/// Dobra cada elemento do vetor.
+fn dobra(v: Vec<i32>) -> Vec<i32> {
+    return vec::map(v, dobrar_um);
+}
+
+/// Auxiliar de `dobra`.
+fn dobrar_um(x: i32) -> i32 {
+    return x * 2;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let nums = vec![1, 2, 3, 4, 5];
+    let pares = vec::filter(nums, eh_par);
+    println("pares: " + str::from_int(vec::len(pares)));
+
+    let mut notas = map!{ "ana": 9, "bia": 7 };
+    map::insert(notas, "cid", 10);
+    match map::get(notas, "ana") {
+        Some(v) => println("ana = " + str::from_int(v)),
+        None => println("sem nota"),
+    }
+}
+
+/// Auxiliar de filtro.
+fn eh_par(x: i32) -> bool {
+    return x % 2 == 0;
+}
+
+#[test]
+fn testa_dobra() {
+    assert_eq(dobra(vec![1, 2]), vec![2, 4]);
+}

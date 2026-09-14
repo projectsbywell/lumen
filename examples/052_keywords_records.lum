@@ -1,0 +1,55 @@
+/// 052 — Keywords da v0.3, raw identifiers, atributos com args,
+/// literais com sufixo, raw strings, \u{...}, comentários /* aninhados */.
+
+/// Registros com campos tipados e literais com sufixo.
+struct Ponto {
+    x: f64,
+    y: f64,
+}
+
+/// Raw identifier como nome de campo: r#value é tratado como IDENT "value".
+struct r#type {
+    r#value: i32,
+}
+
+/// Atributo com args.
+#[test(should_panic)]
+fn atributo_com_args() -> int {
+    return 1;
+}
+
+/// Raw string com conteúdo que não interpreta escapes.
+fn msg_raw() -> str {
+    return r#"Valor: \u{1F600} não é interpretado"#;
+}
+
+/// Comentário /* aninhado */ verificado pelo lexer.
+/* externo /* aninhado */ externo */
+
+fn main() {
+    // Literais com sufixo.
+    let a = 42i32;
+    let b = 3.14f64;
+
+    // Raw string com conteúdo literal.
+    let msg = r#"Campo: {x: f64}"#;
+
+    // Usando r#type como tipo (raw identifier). O campo é .value.
+    let t = r#type { r#value: 7i32 };
+
+    println(str::from_int(a) + " " + str::from_float(b));
+}
+
+#[test]
+fn testa_sufixos() {
+    let a = 42i32;
+    let b = 3.14f64;
+    assert_eq(a, 42);
+    assert_eq(b, 3.14);
+}
+
+#[test]
+fn testa_raw_identifier() {
+    let t = r#type { r#value: 7i32 };
+    assert_eq(t.value, 7);
+}

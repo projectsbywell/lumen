@@ -1,0 +1,40 @@
+# Lumen Standard Library — TOML Module (Reference .lum)
+# Mirrors the Python API in pylumen/tomlx.py
+# Subset: key/value pairs, [table] + [a.b], [[array-table]], arrays
+# (multi-line), inline {k = v}, scalars (string, int, float, bool).
+
+module tomlx
+
+  # Deserialize a TOML-subset string to a table.
+  fun loads(s: String): Map<String, Any>
+    return toml.parse(s)
+
+  # Serialize a table to a TOML-subset string.
+  fun dumps(obj: Map<String, Any>): String
+    return toml.serialize(obj)
+
+  # Convert table to TOML string.
+  fun to_toml(obj: Map<String, Any>): String
+    return dumps(obj)
+
+  # Convert TOML string to table.
+  fun from_toml(s: String): Map<String, Any>
+    return loads(s)
+
+  # Write table as TOML to file. Returns chars written.
+  fun to_toml_file(obj: Map<String, Any>, filepath: String): Int
+    with open(filepath, "w") as f
+      return f.write(dumps(obj))
+
+  # Read TOML-subset from file.
+  fun from_toml_file(filepath: String): Map<String, Any>
+    with open(filepath, "r") as f
+      return loads(f.read())
+
+  # Check if string parses as TOML-subset.
+  fun is_toml(s: String): Bool
+    try
+      loads(s)
+      return true
+    catch ParseError
+      return false

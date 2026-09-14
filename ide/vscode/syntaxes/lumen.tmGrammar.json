@@ -1,0 +1,110 @@
+{
+  "scopeName": "source.lumen",
+  "name": "Lumen",
+  "fileTypes": ["lumen", "lum", "lm"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#literals" },
+    { "include": "#numbers" },
+    { "include": "#functions" },
+    { "include": "#structs" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.lumen",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.lumen",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.lumen",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.lumen",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.lumen",
+          "match": "\\b(fn|let|mut|const|struct|enum|match|if|else|for|while|loop|return|break|continue|use|mod|pub|impl|trait|type|where|as|in|self|test|assert)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.lumen",
+          "match": "\\b(int|float|string|bool)\\b"
+        }
+      ]
+    },
+    "literals": {
+      "patterns": [
+        {
+          "name": "constant.language.lumen",
+          "match": "\\b(true|false|nil)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.lumen",
+          "match": "\\b(0x[0-9a-fA-F_]+|\\d[\\d_]*(\\.\\d+)?)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "entity.name.function.lumen",
+          "match": "(?<=\\bfn\\s)[A-Za-z_][A-Za-z0-9_]*"
+        },
+        {
+          "name": "support.function.lumen",
+          "match": "\\b(print|println|len|push|fib)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+    "structs": {
+      "patterns": [
+        {
+          "name": "entity.name.type.lumen",
+          "match": "\\b(struct|enum|trait|type)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.lumen" },
+            "2": { "name": "entity.name.type.lumen" }
+          }
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.lumen",
+          "match": "(=>|->|\\.\\.|==|!=|<=|>=|&&|\\|\\||[+\\-*/%=<>!&|:;,.])"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+/// 042 — Tarefas assíncronas.
+///
+/// `spawn` agenda dois downloads e `await` coleta os resultados.
+
+async fn baixa(url: str) -> str {
+    let r = http::get(url)?;
+    return r.corpo;
+}
+
+fn main() {
+    let a = spawn baixa("https://a.exemplo.com");
+    let b = spawn baixa("https://b.exemplo.com");
+    println(await a);
+    println(await b);
+}

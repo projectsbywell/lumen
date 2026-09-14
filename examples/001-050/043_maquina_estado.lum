@@ -1,0 +1,79 @@
+/// 043 — Máquina de estado finita com `enum` + `match`.
+///
+/// Estados possíveis de um pedido são representados como
+/// enum. `transicao` avalia o estado atual e a ação para
+/// produzir o próximo estado, com `match` exaustivo.
+
+/// Estados possíveis de um fluxo de pedido.
+enum Estado {
+    Novo,
+    Pagamento,
+    Enviado,
+    Entregue,
+    Cancelado,
+}
+
+/// Ações disponíveis para avançar ou recuar no fluxo.
+enum Acao {
+    Pagar,
+    Enviar,
+    Entregar,
+    Cancelar,
+}
+
+/// Avalia a transição de estado.
+fn transicao(e: Estado, a: Acao) -> Estado {
+    return match e {
+        Estado::Novo => match a {
+            Acao::Pagar => Estado::Pagamento,
+            Acao::Cancelar => Estado::Cancelado,
+            _ => Estado::Novo,
+        },
+        Estado::Pagamento => match a {
+            Acao::Enviar => Estado::Enviado,
+            Acao::Cancelar => Estado::Cancelado,
+            _ => Estado::Pagamento,
+        },
+        Estado::Enviado => match a {
+            Acao::Entregar => Estado::Entregue,
+            Acao::Cancelar => Estado::Cancelado,
+            _ => Estado::Enviado,
+        },
+        Estado::Entregue => Estado::Entregue,
+        Estado::Cancelado => Estado::Cancelado,
+    };
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let s1 = transicao(Estado::Novo, Acao::Pagar);
+    println("Novo + Pagar = " + str::from_int(match s1 {
+        Estado::Pagamento => 1,
+        _ => 0,
+    }));
+
+    let s2 = transicao(Estado::Pagamento, Acao::Enviar);
+    println("Pagamento + Enviar = " + str::from_int(match s2 {
+        Estado::Enviado => 1,
+        _ => 0,
+    }));
+
+    let s3 = transicao(Estado::Enviado, Acao::Entregar);
+    println("Enviado + Entregar = " + str::from_int(match s3 {
+        Estado::Entregue => 1,
+        _ => 0,
+    }));
+
+    let s4 = transicao(Estado::Novo, Acao::Cancelar);
+    println("Novo + Cancelar = " + str::from_int(match s4 {
+        Estado::Cancelado => 1,
+        _ => 0,
+    }));
+}
+
+#[test]
+fn testa_transicao() {
+    assert_eq(transicao(Estado::Novo, Acao::Pagar), Estado::Pagamento);
+    assert_eq(transicao(Estado::Pagamento, Acao::Enviar), Estado::Enviado);
+    assert_eq(transicao(Estado::Novo, Acao::Cancelar), Estado::Cancelado);
+}

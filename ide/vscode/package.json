@@ -1,0 +1,120 @@
+{
+  "name": "lumen",
+  "displayName": "Lumen",
+  "description": "Suporte à linguagem Lumen: sintaxe, snippets, LSP e depuração (launch/attach com stopOnEntry, step por linha, evaluate seguro com aritmética, breakpoints condicionais/hit/logpoints, data breakpoints/watchpoints, setVariable, restart/terminate cooperativo, exception breakpoints LumenError).",
+  "version": "0.1.0",
+  "publisher": "lumen-lang",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Programming Languages", "Snippets", "Debuggers"],
+  "keywords": ["lumen", "lsp", "debugger"],
+  "activationEvents": ["onLanguage:lumen"],
+  "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "lumen",
+        "aliases": ["Lumen", "lumen"],
+        "extensions": [".lumen", ".lum", ".lm"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lumen",
+        "scopeName": "source.lumen",
+        "path": "./syntaxes/lumen.tmGrammar.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "lumen",
+        "path": "./snippets/lumen.json"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "lumen",
+        "label": "Lumen Debug",
+        "languages": ["lumen"],
+        "program": "./dap.py",
+        "runtime": "python3",
+        "configurationAttributes": {
+          "launch": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Arquivo .lumen a depurar."
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": false,
+                "description": "Parar na primeira linha (entry) antes de rodar. Suportado pelo adaptador."
+              }
+            },
+            "additionalProperties": false
+          },
+          "attach": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Arquivo .lumen a anexar (sem PID real: inicia o programa em thread com o mesmo mecanismo do launch)."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "lumen",
+            "request": "launch",
+            "name": "Depurar arquivo Lumen",
+            "program": "${file}",
+            "stopOnEntry": false
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Lumen: Launch",
+            "description": "Lança programa Lumen (suporta stopOnEntry; step por linha; evaluate seguro; breakpoints com condition/hitCondition/logMessage via editor; data breakpoints/watchpoints; restart/terminate cooperativo; setVariable no painel; exception filter lumenError; attach sem PID real).",
+            "body": {
+              "type": "lumen",
+              "request": "launch",
+              "name": "Depurar ${file}",
+              "program": "${file}",
+              "stopOnEntry": false
+            }
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "Lumen",
+      "properties": {
+        "lumen.server.path": {
+          "type": "string",
+          "default": "python3",
+          "description": "Comando do servidor LSP (server.py em ide/lsp)."
+        },
+        "lumen.server.args": {
+          "type": "array",
+          "default": ["../lsp/server.py"],
+          "description": "Argumentos do servidor LSP."
+        },
+        "lumen.trace.server": {
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "off"
+        }
+      }
+    }
+  }
+}

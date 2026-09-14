@@ -1,0 +1,36 @@
+/// 009 — IO: console e arquivos.
+///
+/// `io::read_line` lê do teclado, `fs::read_arquivo` e
+/// `fs::write_arquivo` lidam com arquivos. Tudo que pode falhar
+/// retorna `Result` e usa `?`.
+
+use std::io;
+use std::fs;
+
+/// Eco: lê uma linha e devolve em maiúsculas.
+fn eco() -> Result<String, str> {
+    println("digite algo:");
+    let linha = io::read_line()?;
+    return Ok(str::upper(linha));
+}
+
+/// Salva `texto` em `saida.txt`.
+fn salva(texto: str) -> Result<(), str> {
+    fs::write_arquivo("saida.txt", texto)?;
+    return Ok(());
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    match eco() {
+        Ok(t) => println("eco: " + t),
+        Err(e) => println("erro: " + e),
+    }
+    let args = io::args();
+    println("args = " + str::from_int(vec::len(args)));
+}
+
+#[test]
+fn testa_maiusculas() {
+    assert_eq(str::upper("abc"), "ABC");
+}

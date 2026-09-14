@@ -1,0 +1,68 @@
+# Lumen Standard Library — Crypto Module (Reference .lum)
+# Mirrors the Python API in pylumen/cryptox.py
+
+module cryptox
+
+  # Compute SHA-256 hash.
+  fun sha256(data: String|Bytes): String
+    if isinstance(data, String) then data = data.encode("utf-8")
+    return sha256_hash(data).hex()
+
+  # Compute SHA-256 hash of file.
+  fun sha256_file(filepath: String): String
+    h = sha256_hash()
+    with open(filepath, "rb") as f
+      for chunk in iter(() -> f.read(8192), b"")
+        h.update(chunk)
+    return h.hex()
+
+  # Compute HMAC-SHA256.
+  fun hmac_sha256(key: String|Bytes, message: String|Bytes): String
+    if isinstance(key, String) then key = key.encode("utf-8")
+    if isinstance(message, String) then message = message.encode("utf-8")
+    return hmac_sha256_hash(key, message).hex()
+
+  # Hash data with specified algorithm.
+  fun lhash(data: String|Bytes, algorithm: String = "sha256"): String
+    if isinstance(data, String) then data = data.encode("utf-8")
+    return hash_new(algorithm, data).hex()
+
+  # Verify HMAC-SHA256.
+  fun lverify_hmac(key: String|Bytes, message: String|Bytes, expected: String): Bool
+    computed = hmac_sha256(key, message)
+    return constant_time_compare(computed, expected)
+
+  # XOR cipher encryption.
+  fun xor_cipher(data: String|Bytes, key: String|Bytes): Bytes
+    if isinstance(data, String) then data = data.encode("utf-8")
+    if isinstance(key, String) then key = key.encode("utf-8")
+    if len(key) == 0 then raise ValueError("key must not be empty")
+    key_repeated = (key * (len(data) / len(key) + 1)).slice(0, len(data))
+    return bytes(d ^ k for d, k in zip(data, key_repeated))
+
+  # XOR cipher decryption.
+  fun xor_decrypt(ciphertext: Bytes, key: String|Bytes): String
+    result = xor_cipher(ciphertext, key)
+    return result.decode("utf-8", errors="replace")
+
+  # Generate random key.
+  fun generate_key(length: Int = 32): Bytes
+    return secrets.token_bytes(length)
+
+  # Generate random nonce.
+  fun generate_nonce(length: Int = 16): Bytes
+    return secrets.token_bytes(length)
+
+  # XOR cipher demo.
+  fun xor_demo(): Map<String, Any>
+    plaintext = "Hello, Lumen!"
+    key = "secret"
+    encrypted = xor_cipher(plaintext, key)
+    decrypted = xor_decrypt(encrypted, key)
+    return {
+      "plaintext": plaintext,
+      "key": key,
+      "encrypted_hex": encrypted.hex(),
+      "decrypted": decrypted,
+      "success": decrypted == plaintext,
+    }

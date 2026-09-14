@@ -1,0 +1,23 @@
+/// 014 — Macros higiênicas.
+///
+/// `macro` define uma expansão sintática; o uso leva `!`.
+/// A expansão de `garante_ok!` extrai `Ok` ou aborta com contexto.
+
+/// Extrai `Ok(v)` ou `panic` com `msg` + erro.
+macro garante_ok(res, msg) {
+    match res {
+        Ok(v) => v,
+        Err(e) => panic(msg + ": " + e),
+    }
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let n = garante_ok!(str::to_int("42"), "parse");
+    println("n = " + str::from_int(n));
+}
+
+#[test]
+fn testa_garante_ok() {
+    assert_eq(garante_ok!(Ok(7), "x"), 7);
+}

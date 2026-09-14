@@ -1,0 +1,103 @@
+/// 021 — Tabela hash com `Map` (hash map).
+///
+/// Usa `map!{}` e operações `map::insert`, `map::get`, `map::has`,
+/// `map::remove`. Mostra colisões lógicas via chaves distintas,
+/// `Option` e `match` com guards.
+
+use std::map;
+use std::vec;
+use std::str;
+
+/// Cria tabela com alguns pares iniciais.
+fn tabela_inicial() -> Map<str, i32> {
+    let mut t = map!{ "ana": 9, "bia": 7 };
+    map::insert(t, "cid", 10);
+    map::insert(t, "dan", 8);
+    return t;
+}
+
+/// Insere ou atualiza; devolve valor anterior se existia.
+fn inserir(t: Map<str, i32>, chave: str, valor: i32) -> Option<i32> {
+    let anterior = map::get(t, chave);
+    map::insert(t, chave, valor);
+    return anterior;
+}
+
+/// Busca com `Result`: `Ok(valor)` ou `Err(mensagem)`.
+fn buscar(t: Map<str, i32>, chave: str) -> Result<i32, str> {
+    return match map::get(t, chave) {
+        Some(v) => Ok(v),
+        None => Err("chave não encontrada: " + chave),
+    };
+}
+
+/// Remove e devolve `Some(valor)` se existia.
+fn remover(t: Map<str, i32>, chave: str) -> Option<i32> {
+    return map::remove(t, chave);
+}
+
+/// Conta quantas chaves possuem valor acima de `limite`.
+fn contar_acima(t: Map<str, i32>, chaves: Vec<str>, limite: i32) -> i32 {
+    let mut total: i32 = 0;
+    let mut i: i32 = 0;
+    let n = vec::len(chaves);
+    while i < n {
+        let chave = match vec::get(chaves, i) {
+            Some(c) => c,
+            None => "",
+        };
+        match map::get(t, chave) {
+            Some(v) => {
+                if v > limite {
+                    total = total + 1;
+                }
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return total;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let mut t = tabela_inicial();
+    println("has ana? " + str::from_int(if map::has(t, "ana") { 1 } else { 0 }));
+    println("has zoe? " + str::from_int(if map::has(t, "zoe") { 1 } else { 0 }));
+
+    match buscar(&t, "ana") {
+        Ok(v) => println("ana = " + str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+
+    match buscar(&t, "zoe") {
+        Ok(v) => println("zoe = " + str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+
+    let ant = inserir(&t, "ana", 10);
+    match ant {
+        Some(v) => println("ana anterior = " + str::from_int(v)),
+        None => println("ana nova"),
+    }
+
+    let chaves = vec!["ana", "bia", "cid", "dan", "zoe"];
+    let acima = contar_acima(&t, chaves, 7);
+    println("acima de 7 = " + str::from_int(acima));
+
+    match remover(&t, "bia") {
+        Some(v) => println("removido bia = " + str::from_int(v)),
+        None => println("bia não estava"),
+    }
+    println("has bia? " + str::from_int(if map::has(t, "bia") { 1 } else { 0 }));
+}
+
+#[test]
+fn testa_hash() {
+    let t = tabela_inicial();
+    assert_eq(map::has(t, "ana"), true);
+    assert_eq(buscar(&t, "ana"), Ok(9));
+    assert_eq(buscar(&t, "zoe"), Err("chave não encontrada: zoe"));
+    let chaves = vec!["ana", "bia", "cid"];
+    assert_eq(contar_acima(&t, chaves, 8), 2);
+}

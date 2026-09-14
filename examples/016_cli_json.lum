@@ -1,0 +1,32 @@
+/// 016 — CLI + JSON: argumentos, ambiente e serialização.
+///
+/// Junta `io::args`, `env::var`, `json::stringify` e `fs` num
+/// utilitário completo: lê args, monta JSON e salva em arquivo.
+
+use std::io;
+use std::env;
+use std::json;
+use std::fs;
+
+/// Monta o payload a partir dos argumentos.
+fn payload(args: Vec<String>) -> String {
+    return json::stringify(args);
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let args = io::args();
+    println("argc = " + str::from_int(vec::len(args)));
+    match env::var("SAIDA") {
+        Some(caminho) => {
+            let r = fs::write_arquivo(caminho, payload(args))?;
+            println("salvo");
+        },
+        None => println(payload(args)),
+    }
+}
+
+#[test]
+fn testa_payload() {
+    assert_eq(payload(vec!["app"]), "[\"app\"]");
+}

@@ -1,0 +1,115 @@
+# Lumen Standard Library — SQLite Module (Reference .lum)
+# Mirrors the Python API in pylumen/sqlitex.py
+
+module sqlitex
+
+  # Database cursor wrapper.
+  type LumenCursor
+    private _cursor: Cursor
+
+    fun __init__(cursor: Cursor): Unit
+      self._cursor = cursor
+
+    fun execute(sql: String, params: Tuple = ()): Unit
+      self._cursor.execute(sql, params)
+
+    fun executemany(sql: String, params_list: List<Tuple>): Unit
+      self._cursor.executemany(sql, params_list)
+
+    fun fetchall(): List<Tuple>
+      return self._cursor.fetchall()
+
+    fun fetchone(): Tuple?
+      return self._cursor.fetchone()
+
+    fun fetchmany(size: Int = 1): List<Tuple>
+      return self._cursor.fetchmany(size)
+
+    fun fetch_dicts(): List<Map<String, Any>>
+      cols = [desc[0] for desc in self._cursor.description]
+      return [dict(zip(cols, row)) for row in self._cursor.fetchall()]
+
+    fun rowcount(): Int
+      return self._cursor.rowcount
+
+    fun lastrowid(): Int?
+      return self._cursor.lastrowid
+
+    fun close(): Unit
+      self._cursor.close()
+
+  # Database connection wrapper.
+  type LumenConnection
+    private _conn: Connection
+    private _cursor: LumenCursor
+
+    fun __init__(db_path: String, timeout: Int = 30): Unit
+      self._conn = connect(db_path, timeout)
+      self._cursor = LumenCursor(self._conn.cursor())
+
+    fun cursor(): LumenCursor
+      return self._cursor
+
+    fun execute(sql: String, params: Tuple = ()): Unit
+      self._cursor.execute(sql, params)
+
+    fun executemany(sql: String, params_list: List<Tuple>): Unit
+      self._cursor.executemany(sql, params_list)
+
+    fun fetchall(sql: String, params: Tuple = ()): List<Tuple>
+      self._cursor.execute(sql, params)
+      return self._cursor.fetchall()
+
+    fun fetchone(sql: String, params: Tuple = ()): Tuple?
+      self._cursor.execute(sql, params)
+      return self._cursor.fetchone()
+
+    fun fetchmany(sql: String, params: Tuple = (), size: Int = 1): List<Tuple>
+      self._cursor.execute(sql, params)
+      return self._cursor.fetchmany(size)
+
+    fun commit(): Unit
+      self._conn.commit()
+
+    fun rollback(): Unit
+      self._conn.rollback()
+
+    fun close(): Unit
+      self._cursor.close()
+      self._conn.close()
+
+    fun in_transaction(): Bool
+      return self._conn.in_transaction
+
+  # Create a database connection.
+  fun connect(db_path: String = ":memory:", timeout: Int = 30): LumenConnection
+    ...
+
+  # Close and remove a database connection.
+  fun disconnect(db_path: String = ":memory:"): Unit
+    ...
+
+  # Execute SQL and return results.
+  fun execute(db_path: String, sql: String, params: Tuple = ()): List<Tuple>
+    ...
+
+  # Execute query and return all rows.
+  fun fetchall(db_path: String, sql: String, params: Tuple = ()): List<Tuple>
+    ...
+
+  # Execute query and return one row.
+  fun fetchone(db_path: String, sql: String, params: Tuple = ()): Tuple?
+    ...
+
+  # Execute query and return many rows.
+  fun fetchmany(db_path: String, sql: String, params: Tuple = (), size: Int = 1): List<Tuple>
+    ...
+
+  # Transaction context manager.
+  fun transaction(db_path: String = ":memory:"): ContextManager<LumenConnection>
+    ...
+
+  # Create a table from SQL.
+  fun create_table(conn: LumenConnection, table_sql: String): Unit
+    conn.execute(table_sql)
+    conn.commit()

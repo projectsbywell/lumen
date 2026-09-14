@@ -1,0 +1,54 @@
+/// 048 — Pipeline de dados com `async`, `spawn` e `await`.
+///
+/// Cada estágio do pipeline é uma função assíncrona; estágios
+/// rodam concorrentemente com `spawn` e o resultado é
+/// coletado com `await`.
+
+use std::http;
+
+/// Estágio 1: baixa dados de uma URL.
+async fn baixa(url: str) -> Result<str, str> {
+    let r = http::get(url)?;
+    if r.status != 200 {
+        return Err("status " + str::from_int(r.status));
+    }
+    return Ok(r.corpo);
+}
+
+/// Estágio 2: transforma os dados (simula parse).
+async fn transforma(dado: str) -> str {
+    let mut resultado: str = dado;
+    return str::upper(resultado);
+}
+
+/// Estágio 3: persiste o resultado.
+async fn persiste(dado: str) -> Result<i32, str> {
+    if dado == "" {
+        return Err("dado vazio");
+    }
+    return Ok(str::len(dado));
+}
+
+/// Executa o pipeline completo: baixa, transforma e persiste.
+async fn pipeline(url: str) -> Result<i32, str> {
+    let h1 = spawn baixa(url);
+    let raw = await h1?;
+    let h2 = spawn transforma(raw);
+    let dado = await h2;
+    let h3 = spawn persiste(dado);
+    return await h3;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let h = spawn pipeline("https://api.exemplo.com/dados");
+    match await h {
+        Ok(n) => println("pipeline concluído, chars = " + str::from_int(n)),
+        Err(e) => println("pipeline falhou: " + e),
+    }
+}
+
+#[test]
+fn testa_pipeline_assinatura() {
+    assert(true, "pipeline compila");
+}

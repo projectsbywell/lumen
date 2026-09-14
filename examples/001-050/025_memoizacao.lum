@@ -1,0 +1,104 @@
+/// 025 — Memoização com `Map` e recursão.
+///
+/// Fib recursivo memoizado guarda resultados em `Map<i32,i32>`.
+/// `fib_memo` consulta o cache com `map::get` e armazena com
+/// `map::insert`. Mostra `match`, `if-else`, `while` e `Result`
+/// para n inválido.
+
+use std::map;
+use std::vec;
+use std::str;
+
+/// Fib com memoização; `cache` é `Map` de n → fib(n).
+fn fib_memo(n: i32, cache: Map<i32, i32>) -> i32 {
+    if n < 0 {
+        return 0;
+    }
+    match map::get(cache, n) {
+        Some(v) => return v,
+        None => {},
+    }
+    if n <= 1 {
+        map::insert(cache, n, n);
+        return n;
+    }
+    let a = fib_memo(n - 1, &cache);
+    let b = fib_memo(n - 2, &cache);
+    let res = a + b;
+    map::insert(cache, n, res);
+    return res;
+}
+
+/// Fib com `Result` para n negativo.
+fn fib_result(n: i32, cache: Map<i32, i32>) -> Result<i32, str> {
+    if n < 0 {
+        return Err("n negativo: " + str::from_int(n));
+    }
+    return Ok(fib_memo(n, &cache));
+}
+
+/// Fib iterativo para comparação.
+fn fib_iter(n: i32) -> i32 {
+    if n <= 1 {
+        return n;
+    }
+    let mut a: i32 = 0;
+    let mut b: i32 = 1;
+    let mut i: i32 = 2;
+    while i <= n {
+        let t = a + b;
+        a = b;
+        b = t;
+        i = i + 1;
+    }
+    return b;
+}
+
+/// Calcula sequência de fib até `n` usando memo.
+fn sequencia(n: i32) -> Vec<i32> {
+    let cache = map!{};
+    let mut res = vec![];
+    let mut i: i32 = 0;
+    while i <= n {
+        let v = fib_memo(i, &cache);
+        res = vec::push(res, v);
+        i = i + 1;
+    }
+    return res;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let cache = map!{};
+    println("fib 10 memo = " + str::from_int(fib_memo(10, &cache)));
+    println("fib 10 iter = " + str::from_int(fib_iter(10)));
+
+    match fib_result(5, &cache) {
+        Ok(v) => println("fib 5 = " + str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+    match fib_result(-1, &cache) {
+        Ok(v) => println(str::from_int(v)),
+        Err(e) => println("erro: " + e),
+    }
+
+    let seq = sequencia(7);
+    let mut i: i32 = 0;
+    while i < vec::len(seq) {
+        match vec::get(seq, i) {
+            Some(v) => println("fib " + str::from_int(i) + " = " + str::from_int(v)),
+            None => {},
+        }
+        i = i + 1;
+    }
+}
+
+#[test]
+fn testa_memo() {
+    let cache = map!{};
+    assert_eq(fib_memo(0, &cache), 0);
+    assert_eq(fib_memo(1, &cache), 1);
+    assert_eq(fib_memo(10, &cache), 55);
+    assert_eq(fib_iter(10), 55);
+    assert_eq(fib_result(-1, &cache), Err("n negativo: -1"));
+}

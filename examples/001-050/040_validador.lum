@@ -1,0 +1,27 @@
+/// 040 — Validador com guards.
+///
+/// Usa `match` com guards para regras de negócio legíveis.
+
+/// Valida idade e devolve a categoria ou o erro.
+fn categoria(idade: i32) -> Result<str, str> {
+    return match idade {
+        i if i < 0 => Err("idade negativa"),
+        i if i < 13 => Ok("criança"),
+        i if i < 18 => Ok("adolescente"),
+        i if i < 65 => Ok("adulto"),
+        _ => Ok("idoso"),
+    };
+}
+
+/// Senha precisa de 8+ caracteres.
+fn senha_ok(s: str) -> bool {
+    return str::len(s) >= 8;
+}
+
+fn main() {
+    match categoria(20) {
+        Ok(c) => println(c),
+        Err(e) => println(e),
+    }
+    println(senha_ok("segredo1"));
+}

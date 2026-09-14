@@ -1,0 +1,118 @@
+/// 046 — Carrinho de compras com `Vec` e `Map`.
+///
+/// Operações de adicionar, remover e calcular totais usando
+/// `vec!`, `map!`, `vec::map`, `map::get` e `match`.
+
+use std::map;
+use std::vec;
+
+/// Produto do catálogo.
+struct Produto {
+    id: i32,
+    nome: str,
+    preco: f64,
+}
+
+/// Adiciona uma unidade ao carrinho.
+fn adicionar(carrinho: Map, id: i32) -> Map {
+    match map::get(carrinho, id) {
+        Some(q) => {
+            map::insert(carrinho, id, q + 1);
+        },
+        None => {
+            map::insert(carrinho, id, 1);
+        },
+    };
+    return carrinho;
+}
+
+/// Remove uma unidade do carrinho.
+fn remover(carrinho: Map, id: i32) -> Map {
+    match map::get(carrinho, id) {
+        Some(1) => {
+            map::remove(carrinho, id);
+        },
+        Some(q) => {
+            map::insert(carrinho, id, q - 1);
+        },
+        None => {},
+    };
+    return carrinho;
+}
+
+/// Soma totais por categoria a partir do catálogo.
+fn total(carrinho: Map, catalogo: Vec<Produto>) -> f64 {
+    let mut tot: f64 = 0.0;
+    let chaves = map::keys(carrinho);
+    let mut i: i32 = 0;
+    let n = vec::len(chaves);
+    while i < n {
+        let key = vec::get(chaves, i);
+        match key {
+            Some(k) => {
+                let qty = match map::get(carrinho, k) {
+                    Some(q) => q,
+                    None => 0,
+                };
+                let mut j: i32 = 0;
+                let m = vec::len(catalogo);
+                while j < m {
+                    let p = vec::get(catalogo, j);
+                    match p {
+                        Some(prod) => {
+                            if prod.id == k {
+                                tot = tot + prod.preco * qty as f64;
+                            }
+                        },
+                        None => {},
+                    }
+                    j = j + 1;
+                }
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return tot;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let catalogo = vec![
+        Produto { id: 1, nome: "livro", preco: 29.9 },
+        Produto { id: 2, nome: "caneta", preco: 1.5 },
+        Produto { id: 3, nome: "caderno", preco: 15.0 },
+    ];
+
+    let mut carrinho = map!{};
+    carrinho = adicionar(&carrinho, 1);
+    carrinho = adicionar(&carrinho, 1);
+    carrinho = adicionar(&carrinho, 2);
+
+    let q1 = match map::get(carrinho, 1) {
+        Some(q) => q,
+        None => 0,
+    };
+    println("qtd livro = " + str::from_int(q1));
+
+    println("total = " + str::from_float(total(carrinho, catalogo)));
+
+    carrinho = remover(&carrinho, 1);
+    let q1após = match map::get(carrinho, 1) {
+        Some(q) => q,
+        None => 0,
+    };
+    println("qtd livro após remover = " + str::from_int(q1após));
+}
+
+#[test]
+fn testa_carrinho() {
+    let catalogo = vec![
+        Produto { id: 1, nome: "livro", preco: 29.9 },
+        Produto { id: 2, nome: "caneta", preco: 1.5 },
+    ];
+    let carrinho = adicionar(map!{}, 1);
+    let carrinho = adicionar(&carrinho, 1);
+    let q = match map::get(carrinho, 1) { Some(q) => q, None => 0 };
+    assert_eq(q, 2);
+}

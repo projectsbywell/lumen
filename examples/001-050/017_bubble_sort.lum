@@ -1,0 +1,120 @@
+/// 017 — Bubble sort com `Vec` e `while`.
+///
+/// Ordena um vetor de inteiros usando o algoritmo de bubble sort.
+/// Repete varreduras trocando vizinhos fora de ordem até o vetor
+/// ficar ordenado. Mostra `while`, `vec::len`, `vec::get` e `vec::push`.
+
+use std::vec;
+use std::str;
+
+/// Troca os elementos nas posições `i` e `j` e devolve novo vetor.
+fn troca(v: Vec<i32>, i: i32, j: i32) -> Vec<i32> {
+    let mut novo = vec![];
+    let mut k: i32 = 0;
+    let n = vec::len(v);
+    while k < n {
+        let cur = match vec::get(v, k) {
+            Some(x) => x,
+            None => 0,
+        };
+        if k == i {
+            let outro = match vec::get(v, j) {
+                Some(y) => y,
+                None => 0,
+            };
+            novo = vec::push(novo, outro);
+        } else {
+            if k == j {
+                let outro = match vec::get(v, i) {
+                    Some(y) => y,
+                    None => 0,
+                };
+                novo = vec::push(novo, outro);
+            } else {
+                novo = vec::push(novo, cur);
+            }
+        }
+        k = k + 1;
+    }
+    return novo;
+}
+
+/// Uma passada de bubble: empurra o maior para o final.
+fn passo(v: Vec<i32>) -> Vec<i32> {
+    let mut res = v;
+    let n = vec::len(res);
+    let mut j: i32 = 0;
+    while j < n - 1 {
+        let a = match vec::get(res, j) {
+            Some(x) => x,
+            None => 0,
+        };
+        let b = match vec::get(res, j + 1) {
+            Some(x) => x,
+            None => 0,
+        };
+        if a > b {
+            res = troca(res, j, j + 1);
+        }
+        j = j + 1;
+    }
+    return res;
+}
+
+/// Bubble sort completo com `n` passadas.
+fn bubble_sort(v: Vec<i32>) -> Vec<i32> {
+    let mut res = v;
+    let n = vec::len(res);
+    let mut i: i32 = 0;
+    while i < n {
+        res = passo(res);
+        i = i + 1;
+    }
+    return res;
+}
+
+/// Verifica se o vetor está ordenado.
+fn ordenado(v: Vec<i32>) -> bool {
+    let n = vec::len(v);
+    if n <= 1 {
+        return true;
+    }
+    let mut i: i32 = 0;
+    while i < n - 1 {
+        let a = match vec::get(v, i) {
+            Some(x) => x,
+            None => 0,
+        };
+        let b = match vec::get(v, i + 1) {
+            Some(x) => x,
+            None => 0,
+        };
+        if a > b {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let nums = vec![5, 2, 8, 1, 9, 3];
+    let ord = bubble_sort(nums);
+    println("ordenado? " + str::from_int(if ordenado(ord) { 1 } else { 0 }));
+    let mut k: i32 = 0;
+    while k < vec::len(ord) {
+        match vec::get(ord, k) {
+            Some(v) => println(str::from_int(v)),
+            None => {},
+        }
+        k = k + 1;
+    }
+}
+
+#[test]
+fn testa_bubble() {
+    assert_eq(bubble_sort(vec![3, 1, 2]), vec![1, 2, 3]);
+    assert_eq(bubble_sort(vec![]), vec![]);
+    assert_eq(ordenado(vec![1, 2, 3]), true);
+}

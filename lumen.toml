@@ -1,0 +1,40 @@
+# Manifesto raiz do Lumen — v0.4.0
+[package]
+name = "lumen"
+version = "0.4.0"
+edition = "2026"
+description = "Linguagem pequena e estática: match exaustivo, 3 backends (vm/c/wasm)"
+license = "MIT"
+
+[build]
+target = "vm"      # vm | c | wasm
+opt = 2
+
+[paths]
+spec = "spec"
+compiler = "compiler"
+runtime = "runtime"
+stdlib = "stdlib"
+docs = "docs"
+conformance = "conformance"
+examples = "examples"
+
+[conformance]
+runner = "python3 conformance/suite.py"
+report = "conformance/conformance_report.json"
+meta_pass = 100
+
+[docs]
+generator = "python3 docs/gen.py --src docs/stdlib_api.lum --merge docs/API.md"
+
+[dev]
+fmt_max_width = 100
+test_runner = "lumen test"
+
+[release]
+pip = "pip install ."
+binario_linux = "dist/lumen              (PyInstaller onefile)"
+binario_windows = "dist/lumen.exe        (PyInstaller onefile)"
+binario_macos = "dist/lumen              (PyInstaller onefile)"
+checksums = "infra/releases/SHA256SUMS.txt"
+notas = "infra/releases/NOTAS_v0.4.0.md"

@@ -1,0 +1,61 @@
+# Lumen Standard Library — JSON Module (Reference .lum)
+# Mirrors the Python API in pylumen/jsonx.py
+
+module jsonx
+
+  # Serialize object to JSON string.
+  fun dumps(obj: Any, indent: Int = 2, sort_keys: Bool = false): String
+    return json.serialize(obj, indent, sort_keys)
+
+  # Deserialize JSON string to object.
+  fun loads(s: String): Any
+    return json.deserialize(s)
+
+  # Convert object to compact JSON string.
+  fun to_json(obj: Any): String
+    return json.serialize(obj)
+
+  # Convert JSON string to object.
+  fun from_json(s: String): Any
+    return json.deserialize(s)
+
+  # Write object as JSON to file.
+  fun to_json_file(obj: Any, filepath: String): Int
+    with open(filepath, "w") as f
+      json.dump(obj, f, indent=2)
+      return f.tell()
+
+  # Read JSON from file.
+  fun from_json_file(filepath: String): Any
+    with open(filepath, "r") as f
+      return json.load(f)
+
+  # Pretty-print object as JSON.
+  fun pretty(obj: Any, indent: Int = 4): String
+    return json.serialize(obj, indent)
+
+  # Check if string is valid JSON.
+  fun is_json(s: String): Bool
+    try
+      json.deserialize(s)
+      return true
+    catch JSONDecodeError
+      return false
+
+  # Merge multiple dicts.
+  fun merge(...dicts: Map<String, Any>): Map<String, Any>
+    result = {}
+    for d in dicts
+      result.update(d)
+    return result
+
+  # Deep merge multiple dicts.
+  fun deep_merge(...dicts: Map<String, Any>): Map<String, Any>
+    result = {}
+    for d in dicts
+      for k, v in d
+        if k in result and isinstance(result[k], Map) and isinstance(v, Map)
+          result[k] = deep_merge(result[k], v)
+        else
+          result[k] = v
+    return result

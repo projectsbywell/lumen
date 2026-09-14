@@ -1,0 +1,93 @@
+/// 049 — Geração de relatório com `Map` e `Vec`.
+///
+/// Agrupa dados por categoria, calcula totais e formata
+/// um relatório textual usando `map!`, `vec!`, `match`
+/// e `str::join`.
+
+use std::map;
+use std::vec;
+use std::str;
+
+/// Registro de venda.
+struct Venda {
+    categoria: str,
+    valor: f64,
+}
+
+/// Agrupa vendas por categoria e soma valores.
+fn agrupar(vendas: Vec<Venda>) -> Map {
+    let mut resultado = map!{};
+    let mut i: i32 = 0;
+    let n = vec::len(vendas);
+    while i < n {
+        let v = vec::get(vendas, i);
+        match v {
+            Some(v) => {
+                match map::get(resultado, v.categoria) {
+                    Some(total) => {
+                        map::insert(resultado, v.categoria, total + v.valor);
+                    },
+                    None => {
+                        map::insert(resultado, v.categoria, v.valor);
+                    },
+                };
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return resultado;
+}
+
+/// Formata o relatório como string.
+fn formatar_relatorio(agrupado: Map) -> str {
+    let chaves = vec!["eletrônico", "roupa", "alimentício"];
+    let mut linhas = vec![];
+    let mut i: i32 = 0;
+    let n = vec::len(chaves);
+    while i < n {
+        let cat = vec::get(chaves, i);
+        match cat {
+            Some(c) => {
+                match map::get(agrupado, c) {
+                    Some(total) => {
+                        linhas = vec::push(linhas, c + ": " + str::from_float(total));
+                    },
+                    None => {
+                        linhas = vec::push(linhas, c + ": 0.0");
+                    },
+                };
+            },
+            None => {},
+        }
+        i = i + 1;
+    }
+    return str::join(linhas, "\n");
+}
+
+/// Ponto de entrada do programa.
+fn main() {
+    let vendas = vec![
+        Venda { categoria: "eletrônico", valor: 299.9 },
+        Venda { categoria: "roupa", valor: 49.5 },
+        Venda { categoria: "eletrônico", valor: 89.0 },
+        Venda { categoria: "alimentício", valor: 35.0 },
+    ];
+
+    let agrupado = agrupar(vendas);
+    let relatorio = formatar_relatorio(agrupado);
+    println(relatorio);
+}
+
+#[test]
+fn testa_relatorio() {
+    let vendas = vec![
+        Venda { categoria: "eletrônico", valor: 100.0 },
+        Venda { categoria: "eletrônico", valor: 50.0 },
+    ];
+    let agrupado = agrupar(vendas);
+    match map::get(agrupado, "eletrônico") {
+        Some(t) => assert_eq(t, 150.0),
+        None => assert(false, "categoria não encontrada"),
+    }
+}
