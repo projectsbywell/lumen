@@ -153,6 +153,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            bin: lumen-linux
+          - os: windows-latest
+            bin: lumen.exe
+          - os: macos-latest
+            bin: lumen-macos
     permissions:
       contents: write          # gh release create/upload em tags v*
     steps:
@@ -170,8 +177,10 @@ jobs:
         run: python3 -m build --outdir dist_py
 
       - name: Build binário nativo (PyInstaller onefile)
+        # Nome por OS (matrix.bin): `lumen` puro colidia entre Linux e macOS
+        # no upload do Release (mesmo asset, binários diferentes).
         run: >-
-          pyinstaller --onefile --noconfirm --clean --name lumen
+          pyinstaller --onefile --noconfirm --clean --name ${{ matrix.bin }}
           --hidden-import conformance.suite
           --hidden-import tools.test.lumen_test
           --hidden-import tools.pkg.lumen_pkg
@@ -190,14 +199,14 @@ jobs:
       - name: Smoke do binário (--help)
         shell: bash
         run: |
-          BIN="dist/lumen${{ runner.os == 'Windows' && '.exe' || '' }}"
+          BIN="dist/${{ matrix.bin }}"
           "$BIN" --help
           "$BIN" version
 
       - name: Smoke do binário (compila examples/001_hello.lum)
         shell: bash
         run: |
-          BIN="dist/lumen${{ runner.os == 'Windows' && '.exe' || '' }}"
+          BIN="dist/${{ matrix.bin }}"
           "$BIN" build examples/001_hello.lum ir > /tmp/hello_ir.txt 2>&1
           test -s /tmp/hello_ir.txt || (echo "erro: IR vazio do 001_hello.lum" && exit 1)
           "$BIN" run examples/001_hello.lum
@@ -205,8 +214,8 @@ jobs:
       - name: Checksums sha256
         shell: bash
         run: |
-          find dist -maxdepth 1 -type f -print0 | xargs -0 sha256sum > dist/SHA256SUMS.txt
-          cat dist/SHA256SUMS.txt
+          find dist -maxdepth 1 -type f -print0 | xargs -0 sha256sum > "dist/SHA256SUMS-${{ runner.os }}.txt"
+          cat "dist/SHA256SUMS-${{ runner.os }}.txt"
 
       - name: Publica checagem de release (inline de dist/ nos 3 SO)
         uses: actions/upload-artifact@v4
@@ -222,11 +231,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" \
+          # Idempotente: os 3 jobs de OS criam em paralelo (race); o perdedor
+          # segue para o upload em vez de falhar.
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" \
               --title "Lumen $TAG" \
-              --notes "Ver infra/releases/NOTAS_v0.4.0.md e infra/RELEASES.md" \
-              --repo "$GITHUB_REPOSITORY"
-          fi
+              --notes "Ver infra/RELEASES.md" \
+              --repo "$GITHUB_REPOSITORY" \
+            || true
           gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" | head -20
