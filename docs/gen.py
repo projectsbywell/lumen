@@ -15,7 +15,7 @@ Por padrão (sem --src), procura `../stdlib`, `../examples`, `../compiler`,
 from __future__ import annotations
 
 import argparse
-import datetime
+
 import os
 import re
 import sys
@@ -195,9 +195,10 @@ def render_page(doc: dict, root: str) -> str:
 
 
 def render_index(docs: list[dict], root: str, pages: dict[int, str]) -> str:
-    today = datetime.date.today().isoformat()
+    # Determinístico de propósito: sem data corrente para `git diff --exit-code`
+    # no CI passar em qualquer dia (reproducible docs).
     L = ["# Índice da documentação Lumen", "",
-         f"Gerado por `docs/gen.py` em {today} · spec v{SPEC_VERSION}.", "",
+         f"Gerado por `docs/gen.py` · spec v{SPEC_VERSION}.", "",
          "| Arquivo | Itens documentados |", "|---|---|"]
     for i, d in enumerate(docs):
         rel = os.path.relpath(d["path"], root) if root else d["path"]
@@ -208,9 +209,9 @@ def render_index(docs: list[dict], root: str, pages: dict[int, str]) -> str:
 
 
 def render_merge(docs: list[dict], title: str, root: str) -> str:
-    today = datetime.date.today().isoformat()
+    # Determinístico de propósito: ver render_index.
     L = [f"# {title}", "",
-         f"> Gerado por `docs/gen.py` em {today} · spec Lumen v{SPEC_VERSION}.",
+         f"> Gerado por `docs/gen.py` · spec Lumen v{SPEC_VERSION}.",
          "> Para regenerar: `python3 docs/gen.py --src <fontes> --merge docs/API.md`",
          "> (quando `stdlib/` estiver populada: `--src stdlib`).", ""]
     for d in docs:
