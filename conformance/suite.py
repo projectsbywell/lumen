@@ -1569,6 +1569,12 @@ def run_suite(filter_cat=None):
 
 
 def main(argv):
+    # Windows: console cp1252 não codifica `≈`/`→` dos nomes de casos;
+    # força UTF-8 com fallback (no-op no POSIX, que já é UTF-8).
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+    except Exception:  # noqa: BLE001 — stdout sem reconfigure (pipe estranho)
+        pass
     ap = argparse.ArgumentParser(description="Suíte de conformidade Lumen.")
     ap.add_argument("--filter", default=None, help="Só uma categoria.")
     ap.add_argument("--json", default=None, help="Caminho do relatório.")
