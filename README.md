@@ -26,12 +26,12 @@ pip install .                    # a partir do repo (sdist+wheel via build)
 ```
 
 **Binário nativo** (sem Python; baixe o do seu OS na release v0.5.4 —
-Linux `lumen`, Windows `lumen.exe`, macOS `lumen`; SHAs reais da tag v0.5.3
+Linux `lumen`, Windows `lumen.exe`, macOS `lumen`; SHAs reais da tag v0.5.4
 em `infra/releases/SHA256SUMS.txt`):
 
 ```sh
 # baixar os assets e verificar (rode no diretório dos assets):
-gh release download v0.5.3 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
 cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
 # depois:
 chmod +x lumen && sudo mv lumen /usr/local/bin/

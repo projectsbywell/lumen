@@ -1,18 +1,18 @@
-# SHA256SUMS.txt — checksums dos artefatos da release v0.5.3
+# SHA256SUMS.txt — checksums dos artefatos da release v0.5.4
 #
-# SHAs REAIS, concatenados dos 3 arquivos publicados na tag v0.5.3
-# (`SHA256SUMS-Linux.txt`, `SHA256SUMS-macOS.txt`, `SHA256SUMS-Windows.txt`,
-# gerados pelo CI em `infra/ci.yml`, job build-release, passo
-# "Checksums sha256"):
+# SHAs REAIS, confirmados por download dos assets publicados na tag v0.5.4
+# + arquivos por-OS (`SHA256SUMS-Linux.txt`, `SHA256SUMS-macOS.txt`,
+# `SHA256SUMS-Windows.txt`, gerados pelo CI em `infra/ci.yml`, job
+# build-release, passo "Checksums sha256"):
 #
-#   gh release download v0.5.3 --repo wellintondossantosalmeida-boop/lumen \
-#     -p "SHA256SUMS-*.txt" -D /tmp/shas
+#   gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen \
+#     -D ./lumen-dl && cd ./lumen-dl && sha256sum *
 #
-# Assets da tag v0.5.3 (nomes publicados no GitHub Release):
-#   lumen-0.5.0.tar.gz            sdist (PyPI) — mesmo conteúdo lógico nos 3 SO,
+# Assets da tag v0.5.4 (nomes publicados no GitHub Release):
+#   lumen-0.5.4.tar.gz            sdist (PyPI) — mesmo conteúdo lógico nos 3 SO,
 #                                 mas rebuildado por runner (hash difere por OS;
 #                                 abaixo vai o hash do asset PUBLICADO)
-#   lumen-0.5.0-py3-none-any.whl  wheel (PyPI) — idem
+#   lumen-0.5.4-py3-none-any.whl  wheel (PyPI) — idem
 #   lumen-linux                   binário Linux x86_64 (PyInstaller onefile)
 #   lumen-macos                   binário macOS (PyInstaller onefile)
 #   lumen.exe                     binário Windows x86_64 (PyInstaller onefile)
@@ -22,17 +22,17 @@
 # abaixo). O upload usou `--clobber`, então o asset publicado é o do ÚLTIMO
 # job (Windows, confirmado por download + `sha256sum` local em 2026-09-14).
 # Hashes superados (Linux/macOS) mantidos aqui só como registro:
-#   sdist Linux  79126f866d5044da5a2450efe3015371b913679bf9a097e519c7d45f7b8f2c7b
-#   sdist macOS  fbb5bb2fe81c2534a701b7474dc6d9dce4e1c00b0264c04a39490590e76c7ac3
-#   wheel Linux  dc105d08ffce6b5396a8e01cb98cf3bee00f606160f710c076ddca8c0ce6e1cf
-#   wheel macOS  3f8434d7f11116cf21644e53f0cda70c7dc24fbabb12a80606bb1b0754205577
+#   sdist Linux  610bd2c7dde2f6987d76adc2f8500d223c48a3ecc96797c494fde7c8921181e0
+#   sdist macOS  6db3b3518da8998b03007346dc97f66d586445aaabe9778d9e2e4a1450c3a80d
+#   wheel Linux  8f6d7d07d94dabf27898c9633c27def8a02c3617ba804b5a198ac67b8267615c
+#   wheel macOS  f088f6c779163792dfa288b45b0d044901a32e3b1bba5f82220f6b1ae5825b14
 #
 # Verificação (rode no diretório com os assets baixados):
-#   gh release download v0.5.3 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+#   gh release download v0.5.4 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
 #   cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
 # (No Windows: `certutil -hashfile <asset> SHA256` e compare com as linhas.)
-6f216468605c229c779964af4a4c45a0cb82f9c51f7e80200b7866a145cff25c  lumen-0.5.0.tar.gz
-9a51d9ca400404c6135a4ba578da2762ba1ccc9863b1d548c0e56c3824b4cd09  lumen-0.5.0-py3-none-any.whl
-7f4a51e782916a992231b2bffe913a29c403a4f87d42504f829c5632b561919a  lumen-linux
-20b9441ced77f9b0bf93050e1e85057f6969a13a8f45c355add125e0343137b1  lumen-macos
-61070d6b06701601219c587f3cb935a7c9c9cdf019ce504e04057cee3bff0cba  lumen.exe
+2a0773260382f9eeb50e89bd45dada073cc296320fb7b7741e82e82b7a456530  lumen-0.5.4.tar.gz
+50cbf76ce68d9df6cec8f908ae111c08eaadab8aa9d6947ff2f480fa375f69a7  lumen-0.5.4-py3-none-any.whl
+2754c5434b62b6cb2099bad258a28f93750667d1ad3223002132af7ea91c9eba  lumen-linux
+48267a9daf03a3556e9f5bfdf98f095510269ef8e80a58bd378528457ffd8b1a  lumen-macos
+8b71082f85998576d615b4072813491d3592433a9ff2b86a316c2aedacaeb607  lumen.exe

@@ -13,15 +13,16 @@
 - **Docs/release**: `LIMITACOES.md` virou v0.5.x (histórico congelado +
   fixes da leva); `README.md` com números reais (595+17) e comando
   `sha256sum -c` funcional; `infra/releases/NOTAS_v0.5.4.md` (nova);
-  `SHA256SUMS.txt` com SHAs reais da tag v0.5.3 (última publicada —
+  `SHA256SUMS.txt` com SHAs reais da tag v0.5.4 (publicada —
   sdist/wheel = build Windows, ver cabeçalho do arquivo).
-- **CI**: gate novo `Run examples (001-004)` (idêntico nos 2 ymls);
-  **fica vermelho em 002/004 até o Fix A** (proposital); passo
+- **CI**: gate novo `Run examples (001-004)` (idêntico nos 2 ymls,
+  com diagnóstico GOT/WANT e tolerância a CRLF no Windows); passo
   `Testes unitários (v0.5)` inclui `tools.fmt.test_fmt`; smoke 70;
   `docker-entrypoint.py` = mesma lista do CI; `Dockerfile` v0.5.
 - **Qualidade**: **595 testes unit OK + 17 boost OK**, **50/50
-  conformidade**; tag `v0.5.4` ainda a lançar (`git tag v0.5.4` +
-  `infra/releases/NOTAS_v0.5.4.md` como notas).
+  conformidade**; Fix A (match `Result`/`?`, or-pattern/guard, builtins
+  `Ok`/`Err`/`assert` reais na VM) + 2 testes e2e (002/004); tag
+  `v0.5.4` publicada com Release + 8 assets, site HTTP 200.
 - Breaking: **nenhum** — semântica e APIs intactas.
 - Repo: https://github.com/wellintondossantosalmeida-boop/lumen (CI + Pages + releases em tags `v*`).
 
