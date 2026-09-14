@@ -632,6 +632,11 @@ class TlsDevTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    @unittest.skipIf(
+        os.name == "nt",
+        "Windows não aplica bits de modo POSIX via chmod: key.stat().st_mode "
+        "fica 0o666 mesmo com chmod(0o600) — o assert de permissão é "
+        "POSIX-only (0o600 segue sendo exigido/cobrado em Linux/macOS)")
     @unittest.skipUnless(shutil.which("openssl"),
                          "openssl indisponível (stdlib não assina X.509)")
     def test_keygen_tls_gera_cert_dev_only(self):
@@ -782,16 +787,21 @@ class TlsDevTest(unittest.TestCase):
 
 class CliTest(unittest.TestCase):
     def test_init_add_remove(self):
+        # O chdir de volta para o CWD original precisa acontecer DENTRO do
+        # `with tempfile.TemporaryDirectory()`, antes do cleanup: no Windows
+        # (NTFS) um diretório que é o CWD do processo não pode ser removido
+        # (PermissionError: [WinError 32]); no POSIX deletar o próprio CWD é
+        # permitido e a ordem é irrelevante.
         old = os.getcwd()
-        try:
-            with tempfile.TemporaryDirectory() as td:
-                proj = Path(td) / "meu-app"
-                self.assertEqual(main(["init", str(proj)]), 0)
-                cfg = proj / "lumen.toml"
-                self.assertTrue(cfg.is_file())
-                self.assertIn('name = "meu-app"',
-                              cfg.read_text(encoding="utf-8"))
-                os.chdir(proj)
+        with tempfile.TemporaryDirectory() as td:
+            proj = Path(td) / "meu-app"
+            self.assertEqual(main(["init", str(proj)]), 0)
+            cfg = proj / "lumen.toml"
+            self.assertTrue(cfg.is_file())
+            self.assertIn('name = "meu-app"',
+                          cfg.read_text(encoding="utf-8"))
+            os.chdir(proj)
+            try:
                 self.assertEqual(main(["add", "foo@^1.2.3"]), 0)
                 self.assertEqual(main(["add", "bar"]), 0)
                 text = cfg.read_text(encoding="utf-8")
@@ -802,8 +812,8 @@ class CliTest(unittest.TestCase):
                 self.assertNotIn("foo", text)
                 self.assertIn('bar = "*"', text)
                 self.assertNotEqual(main(["remove", "foo"]), 0)
-        finally:
-            os.chdir(old)
+            finally:
+                os.chdir(old)
 
     def test_edit_helpers(self):
         text = TEMPLATE.format(name="x", registry="http://r")

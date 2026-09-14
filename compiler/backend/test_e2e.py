@@ -193,7 +193,9 @@ class TestE2E(unittest.TestCase):
         self.assertTrue(has_spawn, "codegen não emitiu SPAWN via Call spawn")
         self.assertTrue(has_await, "codegen não emitiu AWAIT_FUT via Call await")
 
-    @unittest.skipUnless(shutil.which("cc"), "cc indisponível")
+    @unittest.skipUnless(
+        any(shutil.which(t) for t in ("cc", "cl", "gcc")),
+        "compilador C indisponível (cc/cl/gcc)")
     def test_c_compila_e_roda(self):
         ps = Parser(tokenize(FAT))
         prog = ps.parse()
@@ -203,13 +205,16 @@ class TestE2E(unittest.TestCase):
             open(os.path.join(d, "lumen_rt.h"), "w").write(rt)
             open(os.path.join(d, "main.c"), "w").write(code)
             open(os.path.join(d, "Makefile"), "w").write(gerar_makefile())
+            # Windows/PE: o binário gerado é sempre <nome>.exe, então `./app`
+            # não resolve (WinError 2); no POSIX o nome é `app` (sem sufixo).
+            exe = "app.exe" if os.name == "nt" else "app"
             r = subprocess.run(["cc", "-std=c99", "-O2", "-Wall",
-                                "-o", "app", "main.c"],
+                                "-o", exe, "main.c"],
                                cwd=d, capture_output=True, text=True,
                                timeout=60)
             self.assertEqual(r.returncode, 0, r.stderr)
-            r2 = subprocess.run(["./app"], cwd=d, capture_output=True,
-                                text=True, timeout=30)
+            r2 = subprocess.run([os.path.join(".", exe)], cwd=d,
+                                capture_output=True, text=True, timeout=30)
             self.assertEqual(r2.returncode, 0, r2.stderr)
             self.assertEqual(r2.stdout.strip(), "137")
 

@@ -728,7 +728,15 @@ def _excluded(rel, patterns):
 
 
 def collect_files(root, include=None, exclude=None):
-    """Lista arquivos do projeto (caminhos relativos, ordenados)."""
+    """Lista arquivos do projeto (caminhos relativos, ordenados).
+
+    Os rel paths são o formato canônico do pacote (chaves do manifesto e
+    arcnames do zip): SEMPRE com '/' (spec do zip), nunca com os.sep.
+    `rel.replace(os.sep, "/")` é no-op no POSIX (os.sep == "/") e no Windows
+    converte as barras invertidas do os.walk — sem isso, o arcname gravado
+    não casa com a chave do manifesto (ex.: `src\\mod.lumen` no zip vs
+    `src/mod.lumen` esperado pelo verificador).
+    """
     root = Path(root)
     excludes = list(DEFAULT_EXCLUDES) + [str(e) for e in (exclude or [])]
     files = []
@@ -747,7 +755,7 @@ def collect_files(root, include=None, exclude=None):
                 continue
             if include and not any(fnmatch(rel, p) for p in include):
                 continue
-            files.append(rel)
+            files.append(rel.replace(os.sep, "/"))
     return sorted(files)
 
 
@@ -825,6 +833,9 @@ def pack_project(project_dir, out_path=None, key=None, strict=None):
         zf.writestr(".lumepkg.json",
                     json.dumps(manifest, indent=1, sort_keys=True))
         for rel in files:
+            # arcname já vem normalizado por collect_files para '/' (spec do
+            # zip); no Windows nunca usar os.sep aqui, senão o verificador
+            # ('rel not in names', com '/') acusa 'faltando no zip'.
             zf.write(project_dir / rel, rel)
     return out, manifest
 
