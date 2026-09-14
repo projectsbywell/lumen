@@ -41,6 +41,9 @@ jobs:
       - name: Suíte de conformidade (meta 100%)
         run: python3 conformance/suite.py
 
+      - name: Instala coverage
+        run: pip install coverage
+
       - name: Cobertura de conformance/ (mínimo 80%)
         run: |
           python3 -m coverage run -m unittest conformance.test_conformance
