@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""lumen — CLI unificada do Lumen (v0.4.0).
+"""lumen — CLI unificada do Lumen (v0.5.0).
 
 Entry point de `pip install .` (`[project.scripts] lumen = "lumen_cli:main"`)
 e do binário nativo gerado pelo PyInstaller (infra/ci.yml, job
@@ -28,7 +28,7 @@ import importlib.metadata
 import os
 import sys
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 HELP = f"""uso: lumen <run|build|test|pkg|repl|conformance|doc|examples|fmt|help> [args...]
 

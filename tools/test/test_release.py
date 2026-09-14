@@ -51,14 +51,16 @@ class TestReleaseV040(unittest.TestCase):
         self.assertEqual(meta["project"]["name"], "lumen")
 
     def test_versao_pyproject_bate_com_manifesto(self):
-        """pyproject [project].version == lumen.toml [package].version."""
+        """pyproject [project].version == lumen.toml [package].version.
+
+        Comparação dinâmica (tomllib) — sem versão hardcoded: o bump
+        conjunto é obrigatório e a checagem nunca deve expirar.
+        """
         pyproject = _load_toml(PYPROJECT)["project"]
         manifesto = _load_toml(MANIFEST)["package"]
         self.assertEqual(pyproject["version"], manifesto["version"],
                          "pyproject.toml e lumen.toml com versões divergentes: "
                          "bump conjunto obrigatório")
-        # release final desta linha: v0.4.0
-        self.assertEqual(pyproject["version"], "0.4.0")
         self.assertTrue(pyproject["requires-python"].startswith(">="))
         self.assertEqual(pyproject["license"], "MIT")
 
@@ -82,7 +84,7 @@ class TestReleaseV040(unittest.TestCase):
         main = getattr(mod, fn_name)
         self.assertTrue(callable(main))
         self.assertTrue(hasattr(mod, "__version__"))
-        self.assertEqual(mod.__version__, "0.4.0")
+        self.assertEqual(mod.__version__, _load_toml(PYPROJECT)["project"]["version"])
 
     def test_cli_help_retorna_zero(self):
         """Smoke offline do entry point: `lumen --help` sai com 0."""

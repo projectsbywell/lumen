@@ -1,0 +1,33 @@
+# lumen.toml — exemplo de projeto Lumen (sistema de build)
+#
+# Uso:  python3 ../build/lumen_build.py --file exemplo_lumen.toml
+#       (ou, dentro de tools/build:  python3 lumen_build.py --file exemplo_lumen.toml)
+#
+# O build é incremental: tarefas cujos inputs (mtime+size) e dependências
+# não mudaram são puladas na segunda execução.
+
+[package]
+name = "exemplo-lumen"
+version = "0.1.0"
+description = "Projeto de exemplo do sistema de build do Lumen"
+# tarefas executadas por padrão (em ordem topológica)
+build = ["build_dados", "empacotar"]
+
+[tasks]
+
+[tasks.build_dados]
+cmd = "python3 ferramentas/build_dados.py"
+desc = "Gera dist/dados.txt a partir de src/dados.txt"
+inputs = ["src/dados.txt"]
+outputs = ["dist/dados.txt"]
+
+[tasks.empacotar]
+cmd = "python3 ferramentas/empacotar.py"
+desc = "Empacota os dados gerados em dist/pacote.txt"
+deps = ["build_dados"]
+inputs = ["dist/dados.txt"]
+outputs = ["dist/pacote.txt"]
+
+# Tarefa sem outputs/inputs: roda quando o hash do comando muda
+# (e sempre na primeira execução).
+limpar = "python3 ferramentas/limpar.py"
