@@ -47,7 +47,7 @@ def lis_json(s: str) -> bool:
     try:
         json.loads(s)
         return True
-    except (json.JSONDecodeError, ValueError):
+    except (json.JSONDecodeError, ValueError, TypeError):
         return False
 
 

@@ -26,7 +26,7 @@ ITEM_RE = re.compile(
 NAME_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)")
 MOD_RE = re.compile(r"^\s*(pub\s+)?mod\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{\s*$")
 ATTR_RE = re.compile(r"^\s*#\[.*\]\s*$")
-SPEC_VERSION = "0.1.0"
+SPEC_VERSION = "0.5.4"
 
 
 def parse_file(path: str) -> dict:

@@ -211,7 +211,7 @@ class Heap:
 
         # Fase 3: Se old também está grande, coleta completa
         if len(self.old) >= self._old_max:
-            self._coleta_completa(vivos)
+            self._coleta_completa()
 
         self.stats.nursery_coletas += 1
         self.stats.old_atual = len(self.old)
@@ -269,7 +269,7 @@ class Heap:
                 if ref.id not in vivos:
                     stack.append(ref.id)
 
-    def _coleta_completa(self, vivos_nursery: Set[int]) -> None:
+    def _coleta_completa(self) -> None:
         """Coleta completa do old generation (mark-and-compact)."""
         # re-mmarca incluindo roots
         todos_vivos: Set[int] = set()

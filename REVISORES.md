@@ -1,5 +1,10 @@
 # Lumen v0.1 — Quem fez o quê
 
+> **[HISTÓRICO v0.1, congelado em 2026-09-13]** — registro da
+> implementação e das bancas de revisão originais. Preservado como
+> está; números (testes, exemplos, placar) referem-se àquela época e
+> foram superados pelas releases seguintes (ver `infra/RELEASES.md`).
+
 Orquestrador: **Muse Spark 1.3** (Meta). Estratégia: 8 implementadores
 nativos em paralelo → integração e correção pelo orquestrador → banca de
 revisão (8 nativos) → correções → verificação final.

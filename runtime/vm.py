@@ -48,10 +48,13 @@ Formato do módulo bytecode (mod_bc):
 
 from __future__ import annotations
 
+import logging
 import sys
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
+
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Opcode constants
@@ -83,6 +86,9 @@ SPAWN      = "SPAWN"
 AWAIT_FUT  = "AWAIT_FUT"
 AWAIT_CH   = "AWAIT_CH"
 CALL_NATIVE = "CALL_NATIVE"
+# Result opcodes (v0.5.4 Fix A)
+IS_OK      = "IS_OK"
+UNWRAP     = "UNWRAP"
 
 
 # ---------------------------------------------------------------------------
@@ -198,8 +204,8 @@ class VM:
         # v0.4: registrar entry frame no heap
         try:
             self.heap.registrar_frame(id(frame), frame.locals)
-        except Exception:
-            pass  # GC wiring nunca deve quebrar execução
+        except Exception as exc:
+            log.debug("GC wiring: falha ao registrar entry frame: %s", exc)
 
         # executa loop principal
         result = self._run_loop()
@@ -250,8 +256,8 @@ class VM:
             if self._opcodes_since_gc >= self._gc_interval:
                 try:
                     self.heap.coletar()
-                except Exception:
-                    pass  # GC nunca levanta para o programa
+                except Exception as exc:
+                    log.warning("GC periódico falhou: %s", exc)
                 self._opcodes_since_gc = 0
 
         if self.stack:
@@ -292,8 +298,8 @@ class VM:
                         self.heap.definir_global(name, obj)
                     else:
                         self.heap.definir_global(name, None)
-                except Exception:
-                    pass  # GC wiring nunca deve quebrar execução
+                except Exception as exc:
+                    log.debug("GC wiring: falha no STORE global '%s': %s", name, exc)
             else:
                 frame.locals[name] = val  # função: só local (sem poluir globals)
 
@@ -320,6 +326,8 @@ class VM:
         elif opcode == MOD:
             b = self._unwrap(self.stack.pop())
             a = self._unwrap(self.stack.pop())
+            if b == 0:
+                raise LumenError("Módulo por zero")
             self.stack.append(a % b)
 
         elif opcode == EQ:
@@ -356,6 +364,26 @@ class VM:
             a = self._unwrap(self.stack.pop())
             self.stack.append(not self._is_truthy(a))
 
+        elif opcode == IS_OK:
+            v = self.stack.pop()
+            try:
+                from runtime.rtlib import Result as _Result
+                ok = v.is_ok() if isinstance(v, _Result) else False
+            except Exception:
+                ok = False
+            self.stack.append(ok)
+
+        elif opcode == UNWRAP:
+            v = self.stack.pop()
+            try:
+                from runtime.rtlib import Result as _Result
+                if isinstance(v, _Result):
+                    self.stack.append(v.unwrap() if v.is_ok() else v.unwrap_err())
+                else:
+                    self.stack.append(v)
+            except Exception as exc:
+                raise self._error(f"UNWRAP falhou: {exc}")
+
         elif opcode == JMP:
             frame.pc += arg  # arg é offset relativo ao próximo PC
 
@@ -366,6 +394,95 @@ class VM:
 
         elif opcode == CALL:
             func_name = arg
+            # builtins do runtime (v0.5.4 Fix A): Ok/Err/Result + asserts + str::from_int
+            if func_name in ("Ok", "Err", "str::from_int", "assert_eq", "assert_ne",
+                             "assert", "assert_almost_eq", "len", "str", "int",
+                             "float", "bool", "panic"):
+                if func_name in ("Ok",):
+                    v = self.stack.pop() if self.stack else None
+                    try:
+                        from runtime.rtlib import Ok as _Ok
+                        self.stack.append(_Ok(v))
+                    except Exception:
+                        self.stack.append(v)
+                    return
+                if func_name in ("Err",):
+                    v = self.stack.pop() if self.stack else None
+                    try:
+                        from runtime.rtlib import Err as _Err
+                        self.stack.append(_Err(v))
+                    except Exception:
+                        self.stack.append(v)
+                    return
+                if func_name == "str::from_int":
+                    v = self.stack.pop() if self.stack else None
+                    v = self._unwrap(v)
+                    self.stack.append(str(v))
+                    return
+                if func_name == "assert_eq":
+                    b = self._unwrap(self.stack.pop() if self.stack else None)
+                    a = self._unwrap(self.stack.pop() if self.stack else None)
+                    if a != b:
+                        raise self._error(f"assert_eq falhou: {a!r} != {b!r}")
+                    self.stack.append(0)
+                    return
+                if func_name == "assert_ne":
+                    b = self._unwrap(self.stack.pop() if self.stack else None)
+                    a = self._unwrap(self.stack.pop() if self.stack else None)
+                    if a == b:
+                        raise self._error(f"assert_ne falhou: {a!r} == {b!r}")
+                    self.stack.append(0)
+                    return
+                if func_name == "assert":
+                    a = self._unwrap(self.stack.pop() if self.stack else None)
+                    if not self._is_truthy(a):
+                        raise self._error(f"assert falhou: {a!r}")
+                    self.stack.append(0)
+                    return
+                if func_name == "assert_almost_eq":
+                    b = self._unwrap(self.stack.pop() if self.stack else None)
+                    a = self._unwrap(self.stack.pop() if self.stack else None)
+                    try:
+                        import math as _math
+                        ok = _math.isclose(float(a), float(b), rel_tol=1e-7, abs_tol=1e-7)
+                    except Exception:
+                        ok = (a == b)
+                    if not ok:
+                        raise self._error(f"assert_almost_eq falhou: {a!r} != {b!r}")
+                    self.stack.append(0)
+                    return
+                if func_name == "len":
+                    v = self._unwrap(self.stack.pop() if self.stack else None)
+                    try:
+                        self.stack.append(len(v))
+                    except Exception:
+                        self.stack.append(0)
+                    return
+                if func_name in ("str",):
+                    v = self._unwrap(self.stack.pop() if self.stack else None)
+                    self.stack.append(str(v))
+                    return
+                if func_name in ("int",):
+                    v = self._unwrap(self.stack.pop() if self.stack else None)
+                    try:
+                        self.stack.append(int(v))
+                    except Exception as exc:
+                        raise self._error(f"int() falhou: {exc}")
+                    return
+                if func_name in ("float",):
+                    v = self._unwrap(self.stack.pop() if self.stack else None)
+                    try:
+                        self.stack.append(float(v))
+                    except Exception as exc:
+                        raise self._error(f"float() falhou: {exc}")
+                    return
+                if func_name in ("bool",):
+                    v = self._unwrap(self.stack.pop() if self.stack else None)
+                    self.stack.append(bool(self._is_truthy(v)))
+                    return
+                if func_name in ("panic",):
+                    v = self.stack.pop() if self.stack else "panic"
+                    raise self._error(f"panic: {v}")
             # obtém metadata da função
             func_meta = self._resolve_function_by_name(func_name)
             arity = func_meta["arity"]
@@ -395,8 +512,8 @@ class VM:
             # v0.4: registrar frame no heap
             try:
                 self.heap.registrar_frame(id(new_frame), new_frame.locals)
-            except Exception:
-                pass  # GC wiring nunca deve quebrar execução
+            except Exception as exc:
+                log.debug("GC wiring: falha ao registrar frame CALL: %s", exc)
 
         elif opcode == RET:
             retval = self.stack.pop() if self.stack else None
@@ -463,8 +580,8 @@ class VM:
             # registrar no heap (reusa infraestrutura v0.4)
             try:
                 self.heap.registrar_frame(id(new_coro), new_coro.locals)
-            except Exception:
-                pass
+            except Exception as exc:
+                log.debug("GC wiring: falha ao registrar frame SPAWN: %s", exc)
             self._prontas.append(new_coro)
 
         elif opcode == AWAIT_FUT:
@@ -497,7 +614,7 @@ class VM:
                         stk.append(fut.valor)
                         self._coro_saved[_cid] = (fs, stk)
                         self._prontas.append(fs[0])
-                future._waker = _waker_fut
+                future._wakers.append(_waker_fut)
                 self.frames.clear()
                 self.stack.clear()
 
@@ -513,7 +630,7 @@ class VM:
                     f"(recebeu {type(ch).__name__})"
                 )
             if ch.tamanho() > 0:
-                self.stack.append(ch._buffer.popleft())
+                self.stack.append(ch.receber())
             else:
                 root = self._find_coro_root()
                 if root is None:
@@ -581,8 +698,8 @@ class VM:
                 "int", "float", "bool", "str", "none",
             ):
                 return val.valor
-        except Exception:
-            pass
+        except Exception as exc:
+            log.debug("_unwrap: falha ao desembrulhar: %s", exc)
         return val
 
     @staticmethod
@@ -630,6 +747,7 @@ class VM:
     # ------------------------------------------------------------------
     @staticmethod
     def _is_truthy(val: Any) -> bool:
+        val = VM._unwrap(val)
         if val is None:
             return False
         if val is False:
@@ -684,8 +802,8 @@ class VM:
             if self.frames:
                 try:
                     self.heap.remover_frame(id(self.frames[-1]))
-                except Exception:
-                    pass  # GC wiring nunca deve quebrar execução
+                except Exception as exc:
+                    log.debug("GC wiring: falha ao remover frame entry: %s", exc)
             # P5.2: se há coroutines na fila, não para a VM
             if self._prontas:
                 self.frames.clear()
@@ -697,8 +815,8 @@ class VM:
         # v0.4: remover frame morto do heap (try/except defensivo)
         try:
             self.heap.remover_frame(id(frame))
-        except Exception:
-            pass  # GC wiring nunca deve quebrar execução
+        except Exception as exc:
+            log.debug("GC wiring: falha ao remover frame: %s", exc)
         caller = frame.ret_frame
         if caller is not None and frame.ret_addr is not None:
             caller.pc = frame.ret_addr

@@ -1,5 +1,6 @@
 """Testing utilities for the Lumen standard library."""
 
+import math
 import time
 import tracemalloc
 import sys
@@ -109,8 +110,9 @@ class TestCase:
             raise AssertError(f"Expected {exc_type.__name__}, got {type(e).__name__}: {e}")
 
     def assert_almost_eq(self, a: float, b: float, places: int = 6, msg: str = "") -> bool:
-        """Assert floats are approximately equal (compara arredondados)."""
-        if round(a, places) != round(b, places):
+        """Assert floats are approximately equal using math.isclose."""
+        tol = 10 ** (-places)
+        if not math.isclose(a, b, rel_tol=tol, abs_tol=tol):
             raise AssertError(msg or f"Expected {a!r} ≈ {b!r}")
         return True
 

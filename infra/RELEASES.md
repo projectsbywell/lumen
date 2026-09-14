@@ -3,6 +3,28 @@
 > Histórico de versões. Formato: `lumen.toml [package] version` +
 > git tag `vX.Y.Z`. Política: semver; spec congelada por minor.
 
+## v0.5.4 — 2026-09-14 (integração: versões+docs+gates, semântica intacta)
+
+- **Versões**: tudo em `0.5.4` (`lumen.toml`, `pyproject.toml` com
+  `Repository` correto, `lumen_cli.py`, `conformance/suite.py`,
+  `docs/gen.py`, `spec/*.md`); `docs/API.md` regenerado (diff só na
+  versão); nota de honestidade em `SPEC.md` §8 (suíte 50/50 = subset
+  v0.1: sem GC/async/traits macroscópicos).
+- **Docs/release**: `LIMITACOES.md` virou v0.5.x (histórico congelado +
+  fixes da leva); `README.md` com números reais (595+17) e comando
+  `sha256sum -c` funcional; `infra/releases/NOTAS_v0.5.4.md` (nova);
+  `SHA256SUMS.txt` com SHAs reais da tag v0.5.3 (última publicada —
+  sdist/wheel = build Windows, ver cabeçalho do arquivo).
+- **CI**: gate novo `Run examples (001-004)` (idêntico nos 2 ymls);
+  **fica vermelho em 002/004 até o Fix A** (proposital); passo
+  `Testes unitários (v0.5)` inclui `tools.fmt.test_fmt`; smoke 70;
+  `docker-entrypoint.py` = mesma lista do CI; `Dockerfile` v0.5.
+- **Qualidade**: **595 testes unit OK + 17 boost OK**, **50/50
+  conformidade**; tag `v0.5.4` ainda a lançar (`git tag v0.5.4` +
+  `infra/releases/NOTAS_v0.5.4.md` como notas).
+- Breaking: **nenhum** — semântica e APIs intactas.
+- Repo: https://github.com/wellintondossantosalmeida-boop/lumen (CI + Pages + releases em tags `v*`).
+
 ## v0.5.0 — 2026-09-14 (atual, runtime: Objeto+async+DAP gaps+fmt)
 
 - **P5.1 — Wrapping `Objeto`**: STORE global aloca no Heap, LOAD desembrulha

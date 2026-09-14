@@ -6,7 +6,7 @@ v0.5: runtime — heap com `Objeto` (globais envolvidos, LOAD desembrulha),
 `async` de verdade na VM (`SPAWN`/`AWAIT_FUT`/`AWAIT_CH`/`YIELD` + lowering
 no codegen), DAP por linha + eval seguro + attach + watchpoints, e
 `lumen fmt` standalone.
-576 testes unit + 17 boost + 50/50 conformidade (ver ROADMAP).
+595 testes unit + 17 boost + 50/50 conformidade (ver ROADMAP).
 
 ```lum
 fn main() {
@@ -25,11 +25,15 @@ fn main() {
 pip install .                    # a partir do repo (sdist+wheel via build)
 ```
 
-**Binário nativo** (sem Python; baixe o do seu OS na release v0.4.0 —
-Linux `lumen`, Windows `lumen.exe`, macOS `lumen`; verifique o sha256 em
-`infra/releases/SHA256SUMS.txt`):
+**Binário nativo** (sem Python; baixe o do seu OS na release v0.5.4 —
+Linux `lumen`, Windows `lumen.exe`, macOS `lumen`; SHAs reais da tag v0.5.3
+em `infra/releases/SHA256SUMS.txt`):
 
 ```sh
+# baixar os assets e verificar (rode no diretório dos assets):
+gh release download v0.5.3 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
+# depois:
 chmod +x lumen && sudo mv lumen /usr/local/bin/
 lumen --help                     # smoke
 ```
@@ -49,7 +53,7 @@ PYTHONPATH=. python3 -m unittest compiler.test_compiler compiler.backend.test_ba
   runtime.test_runtime stdlib.test_stdlib tools.pkg.test_pkg \
   tools.build.test_build tools.test.test_runner_self tools.test.test_release \
   ide.lsp.test_lsp ide.lsp.test_server_extra ide.vscode.test_dap \
-  ide.playground.test_playground conformance.test_conformance
+  ide.playground.test_playground conformance.test_conformance tools.fmt.test_fmt
 PYTHONPATH=.:stdlib python3 test_boost.py
 python3 conformance/suite.py
 
@@ -104,4 +108,4 @@ em `conformance/conformance_report.json`.
 ## Licença
 
 MIT — ver `LICENSE`. Manifesto: `lumen.toml`. Release notes:
-`infra/RELEASES.md` + `infra/releases/NOTAS_v0.4.0.md`.
+`infra/RELEASES.md` + `infra/releases/NOTAS_v0.5.4.md`.

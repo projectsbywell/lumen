@@ -1,7 +1,7 @@
-# Manifesto raiz do Lumen — v0.4.0
+# Manifesto raiz do Lumen — v0.5.4
 [package]
 name = "lumen"
-version = "0.5.0"
+version = "0.5.4"
 edition = "2026"
 description = "Linguagem pequena e estática: match exaustivo, 3 backends (vm/c/wasm)"
 license = "MIT"
@@ -37,4 +37,7 @@ binario_linux = "dist/lumen              (PyInstaller onefile)"
 binario_windows = "dist/lumen.exe        (PyInstaller onefile)"
 binario_macos = "dist/lumen              (PyInstaller onefile)"
 checksums = "infra/releases/SHA256SUMS.txt"
-notas = "infra/releases/NOTAS_v0.4.0.md"
+# Verificação (SHAs reais da tag v0.5.3; rode no dir com os assets):
+#   gh release download v0.5.3 --repo wellintondossantosalmeida-boop/lumen -D ./lumen-dl
+#   cd ./lumen-dl && sha256sum -c "$OLDPWD/infra/releases/SHA256SUMS.txt"
+notas = "infra/releases/NOTAS_v0.5.4.md"

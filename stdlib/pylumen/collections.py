@@ -168,8 +168,8 @@ class Set(set):
         super().add(item)
 
     def remove(self, item: Any) -> None:
-        """Remove item from set."""
-        self.discard(item)
+        """Remove item from set. Raises KeyError if absent."""
+        super().remove(item)
 
     def has(self, item: Any) -> bool:
         """Check if item is in set."""

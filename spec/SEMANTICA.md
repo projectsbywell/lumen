@@ -1,6 +1,6 @@
 # Lumen — Semântica Operacional e Denotacional
 
-**Versão:** 0.1.0-draft  
+**Versão:** 0.5.4  
 **Status:** Normativa  
 **Referencia:** `EBNF.md`, `TIPOS.md`; referenciado por `SPEC.md` §5
 

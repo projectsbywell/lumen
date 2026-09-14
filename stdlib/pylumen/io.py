@@ -36,9 +36,13 @@ class LumenFile:
         self._mode = mode
         self._file = open(filepath, mode)
 
-    def read(self, size: int = -1) -> str:
-        """Read from file."""
-        return self._file.read(size) if size > 0 else self._file.read()
+    def read(self, size: Optional[int] = -1) -> str:
+        """Read from file. read(0) returns ''; size<0 or None reads all."""
+        if size == 0:
+            return ""
+        if size is None or size < 0:
+            return self._file.read()
+        return self._file.read(size)
 
     def readline(self) -> str:
         """Read a single line."""

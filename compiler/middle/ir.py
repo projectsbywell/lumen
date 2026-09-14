@@ -127,18 +127,18 @@ class Baixador:
             l = self.expr(e.l, b); r = self.expr(e.r, b); d = tmp()
             b.instrs.append(Instr(BINOP.get(e.op, "add"), d, [l, r])); return d
         if isinstance(e, A.UnOp):
+            if e.op == "?":
+                return self._question(e.e, b)
             v = self.expr(e.e, b); d = tmp()
             if e.op == "-":
                 z = tmp(); b.instrs.append(Instr("const", z, [], 0))
                 b.instrs.append(Instr("sub", d, [z, v]))
             elif e.op in ("!", "not"):
                 b.instrs.append(Instr("not", d, [v]))
-            else:  # ?, await, spawn-valor, as, &, &mut, *
+            else:  # await, spawn-valor, as, &, &mut, *
                 b.instrs.append(Instr("copy", d, [v]))
             return d
         if isinstance(e, A.Call):
-            for a in e.args:
-                self.expr(a, b)
             if e.fn.endswith("!") or e.fn in ("vec", "map", "metodo"):
                 d = tmp(); b.instrs.append(Instr("const", d, [], 0)); return d
             if e.fn in ("println", "print"):
@@ -202,33 +202,114 @@ class Baixador:
                 return i.dst
         d = tmp(); b.instrs.append(Instr("const", d, [], 0)); return d
 
+    def _question(self, inner, b: Bloco) -> str:
+        """`expr?`: desembrulha Ok ou retorna Err precoce."""
+        v = self.expr(inner, b)
+        t_ok = tmp(); d = tmp()
+        b.instrs.append(Instr("is_ok", t_ok, [v]))
+        l_ok, l_err = lab(), lab()
+        b.instrs.append(Instr("br", "", [t_ok, l_ok, l_err]))
+        b.instrs.append(Instr("label", "", [l_err]))
+        b.instrs.append(Instr("ret", "", [v]))
+        b.instrs.append(Instr("label", "", [l_ok]))
+        b.instrs.append(Instr("unwrap", d, [v]))
+        return d
+
+    @staticmethod
+    def _is_var_pat(pat: str) -> bool:
+        return (isinstance(pat, str) and pat.isidentifier()
+                and (pat[0].islower() or pat[0] == "_")
+                and pat not in ("true", "false")
+                and "(" not in pat and "|" not in pat and ":" not in pat)
+
+    @staticmethod
+    def _split_ok_err(pat: str):
+        s = str(pat).strip()
+        for tag in ("Ok", "Err"):
+            if s.startswith(tag + "(") and s.endswith(")"):
+                inner = s[len(tag) + 1:-1].strip()
+                return tag, inner
+        return None, None
+
     def _match_value(self, e, b: Bloco):
         from compiler.frontend import ast_nodes as A
         res = tmp(); l_end = lab()
         subj = self.expr(e.alvo, b)
         for bra in e.bracos:
             l_next, l_body = lab(), lab()
-            pat = bra.pat
-            if pat == "_" or (isinstance(pat, str) and pat.startswith("_")):
+            pat = bra.pat if isinstance(bra.pat, str) else str(bra.pat)
+            gd = getattr(bra, "guard", None)
+            # wildcard `_` (ou `_nome`): sempre casa
+            if pat == "_" or (isinstance(pat, str) and pat.startswith("_") and "(" not in pat and "|" not in pat):
+                if pat != "_" and self._is_var_pat(pat):
+                    b.instrs.append(Instr("copy", pat, [subj]))
+                if gd is not None:
+                    g = self.expr(gd, b)
+                    b.instrs.append(Instr("br", "", [g, l_body, l_next]))
+                    b.instrs.append(Instr("label", "", [l_body]))
+                    self._arm_body(bra, b, res, l_end)
+                    b.instrs.append(Instr("label", "", [l_next]))
+                    continue
                 self._arm_body(bra, b, res, l_end)
                 break
-            if "|" in str(pat):
-                matched = tmp(); z = tmp()
-                b.instrs.append(Instr("const", z, [], 0))
-                b.instrs.append(Instr("copy", matched, [z]))
-                for alt in str(pat).split("|"):
-                    t = tmp(); pv = self._pat_const(alt.strip(), b)
-                    b.instrs.append(Instr("eq", t, [subj, pv]))
-                    b.instrs.append(Instr("br", "", [t, l_body, l_next]))
+            # variável simples `v` (catch-all nomeado), com ou sem guard
+            if self._is_var_pat(pat):
+                b.instrs.append(Instr("copy", pat, [subj]))
+                if gd is not None:
+                    b.instrs.append(Instr("label", "", [l_body + "_chk"]))
+                    g = self.expr(gd, b)
+                    b.instrs.append(Instr("br", "", [g, l_body, l_next]))
+                    b.instrs.append(Instr("label", "", [l_body]))
+                    self._arm_body(bra, b, res, l_end)
                     b.instrs.append(Instr("label", "", [l_next]))
-                    l_next = lab()
-                b.instrs.append(Instr("jmp", "", [l_end]))
+                    continue
+                self._arm_body(bra, b, res, l_end)
+                break
+            # Ok(v) / Err(e) sobre Result
+            tag, inner = self._split_ok_err(pat)
+            if tag is not None:
+                t_ok = tmp()
+                b.instrs.append(Instr("is_ok", t_ok, [subj]))
+                l_chk = lab()
+                if tag == "Ok":
+                    b.instrs.append(Instr("br", "", [t_ok, l_chk, l_next]))
+                else:
+                    b.instrs.append(Instr("br", "", [t_ok, l_next, l_chk]))
+                b.instrs.append(Instr("label", "", [l_chk]))
+                if inner and inner != "_" and inner.isidentifier():
+                    b.instrs.append(Instr("unwrap", inner, [subj]))
+                if gd is not None:
+                    g = self.expr(gd, b)
+                    b.instrs.append(Instr("br", "", [g, l_body, l_next]))
+                else:
+                    b.instrs.append(Instr("jmp", "", [l_body]))
                 b.instrs.append(Instr("label", "", [l_body]))
                 self._arm_body(bra, b, res, l_end)
+                b.instrs.append(Instr("label", "", [l_next]))
+                continue
+            # or-pattern `a | b | c` (com guard opcional no braço todo)
+            if "|" in pat:
+                alts = [a.strip() for a in pat.split("|")]
+                l_chk_guard = lab()
+                for idx, alt in enumerate(alts):
+                    t = tmp(); pv = self._pat_const(alt, b)
+                    b.instrs.append(Instr("eq", t, [subj, pv]))
+                    if idx < len(alts) - 1:
+                        l_alt_next = lab()
+                        b.instrs.append(Instr("br", "", [t, l_chk_guard if gd is not None else l_body, l_alt_next]))
+                        b.instrs.append(Instr("label", "", [l_alt_next]))
+                    else:
+                        b.instrs.append(Instr("br", "", [t, l_chk_guard if gd is not None else l_body, l_next]))
+                if gd is not None:
+                    b.instrs.append(Instr("label", "", [l_chk_guard]))
+                    g = self.expr(gd, b)
+                    b.instrs.append(Instr("br", "", [g, l_body, l_next]))
+                b.instrs.append(Instr("label", "", [l_body]))
+                self._arm_body(bra, b, res, l_end)
+                b.instrs.append(Instr("label", "", [l_next]))
                 continue
             pv = self._pat_const(str(pat), b)
             t = tmp(); b.instrs.append(Instr("eq", t, [subj, pv]))
-            gd = getattr(bra, "guard", None)
             if gd is not None:
                 l_chk = lab()
                 b.instrs.append(Instr("br", "", [t, l_chk, l_next]))

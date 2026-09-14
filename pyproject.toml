@@ -1,4 +1,4 @@
-# pyproject.toml — empacotamento Python do Lumen (v0.4.0).
+# pyproject.toml — empacotamento Python do Lumen (v0.5.4).
 # sdist + wheel via `python3 -m build`; binário nativo via PyInstaller
 # (infra/ci.yml, job build-release). Dependências: nenhuma (stdlib).
 [build-system]
@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lumen"
-version = "0.5.0"
+version = "0.5.4"
 description = "Linguagem pequena e estática: match exaustivo, 3 backends (vm/c/wasm), ecossistema (pkg TLS/audit, DAP, playground, releases)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -33,7 +33,7 @@ classifiers = [
 lumen = "lumen_cli:main"
 
 [project.urls]
-Repository = "https://github.com/lumen-lang/lumen"
+Repository = "https://github.com/wellintondossantosalmeida-boop/lumen"
 
 # Módulo único na raiz (entry point do script `lumen`).
 # O resto do código vive em pacotes namespace (sem __init__.py), descobertos

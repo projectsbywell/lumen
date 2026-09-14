@@ -15,7 +15,7 @@ import os
 # garante que o diretório raiz está no path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from runtime.vm import VM, executar, LumenError, CONST, ADD, SUB, MUL, DIV, LOAD, STORE, JMP, BR, CALL, RET, PRINT, HALT, YIELD, SPAWN, AWAIT_FUT, AWAIT_CH, CALL_NATIVE
+from runtime.vm import VM, executar, LumenError, CONST, ADD, SUB, MUL, DIV, MOD, LOAD, STORE, JMP, BR, CALL, RET, PRINT, HALT, YIELD, SPAWN, AWAIT_FUT, AWAIT_CH, CALL_NATIVE
 from runtime.gc import Heap, Objeto, GCStats
 from runtime.threads import (
     Tarefa, Escalonador, Channel, EstadoTarefa,
@@ -384,7 +384,7 @@ class TestGC(unittest.TestCase):
         for v in vivos:
             h.desmarcar_root(v)
         # coletar() do nursery não atinge old; forçamos via _coleta_completa
-        h._coleta_completa(set())
+        h._coleta_completa()
         self.assertEqual(h.tamanho_total(), 0)
 
     def test_stats_registra_corretamente(self):
@@ -1317,7 +1317,7 @@ class TestAsyncV03(unittest.TestCase):
         """Waker da future é chamado corretamente ao resolver."""
         f = Future()
         chamado = []
-        f._waker = lambda fut: chamado.append(fut.valor)
+        f._wakers.append(lambda fut: chamado.append(fut.valor))
         f.set_result(123)
         self.assertEqual(chamado, [123])
 
@@ -1695,6 +1695,147 @@ class TestVMAsync(unittest.TestCase):
         self.assertGreaterEqual(frames_during[0], 1)
         # Após conclusão, nenhum frame de coroutine no heap
         self.assertEqual(len(vm.heap._frames), 0)
+
+
+# ===================================================================
+# Testes de correções — Revisão
+# ===================================================================
+class TestReviewFixes(unittest.TestCase):
+    """Testes para achados da revisão (ALTA/MÉDIA)."""
+
+    # -- #1 MOD por zero → LumenError --------------------------------
+    def test_mod_por_zero_levanta_lumen_error(self):
+        """MOD por zero levanta LumenError em vez de ZeroDivisionError."""
+        mod_bc = {
+            "consts": [10, 0],
+            "bytecodes": [
+                (CONST, 0),   # 10
+                (CONST, 1),   # 0
+                (MOD,),
+                (HALT,),
+            ],
+            "functions": {},
+            "entry": "__main__",
+        }
+        vm = VM()
+        with self.assertRaises(LumenError) as ctx:
+            vm.executar(mod_bc)
+        self.assertIn("Módulo por zero", str(ctx.exception))
+
+    def test_mod_funcional(self):
+        """MOD funcional: 10 % 3 == 1."""
+        mod_bc = {
+            "consts": [10, 3],
+            "bytecodes": [
+                (CONST, 0),   # 10
+                (CONST, 1),   # 3
+                (MOD,),
+                (HALT,),
+            ],
+            "functions": {},
+            "entry": "__main__",
+        }
+        vm = VM()
+        result = vm.executar(mod_bc)
+        self.assertEqual(result, 1)
+
+    # -- #2 Future multi-awaiter -------------------------------------
+    def test_future_multi_awaiter(self):
+        """Duas coroutines aguardam a mesma Future; ambas acordam."""
+        from runtime.threads import Future
+
+        f = Future()
+
+        coro_a = {
+            "__func__": "a",
+            "consts": [],
+            "locals": [],
+            "bytecodes": [
+                ("LOAD", "f"),
+                ("AWAIT_FUT",),
+                ("PRINT",),
+                ("RET",),
+            ],
+            "arity": 0,
+        }
+        coro_b = {
+            "__func__": "b",
+            "consts": [],
+            "locals": [],
+            "bytecodes": [
+                ("LOAD", "f"),
+                ("AWAIT_FUT",),
+                ("PRINT",),
+                ("RET",),
+            ],
+            "arity": 0,
+        }
+        resolver = {
+            "__func__": "res",
+            "consts": [42],
+            "locals": [],
+            "bytecodes": [
+                ("LOAD", "f"),
+                ("CONST", 0),
+                ("CALL_NATIVE", ("resolve_future", 2)),
+                ("RET",),
+            ],
+            "arity": 0,
+        }
+        mod_bc = {
+            "consts": [coro_a, coro_b, resolver],
+            "bytecodes": [
+                ("SPAWN", "a"),
+                ("SPAWN", "b"),
+                ("SPAWN", "res"),
+            ],
+            "functions": {},
+            "entry": "__main__",
+        }
+        vm = VM()
+        vm._native_calls["resolve_future"] = lambda fut, val: fut.set_result(val)
+        vm.executar(mod_bc, globals_extra={"f": f})
+        # Ambos devem ter recebido o valor 42
+        self.assertEqual(sorted(vm.output), ["42", "42"])
+
+    def test_future_waker_list_nao_sobrescreve(self):
+        """Segundo awaiter na mesma Future não sobrescreve o primeiro."""
+        from runtime.threads import Future
+        f = Future()
+        chamados = []
+        f._wakers.append(lambda fut: chamados.append("A"))
+        f._wakers.append(lambda fut: chamados.append("B"))
+        f.set_result(1)
+        self.assertEqual(chamados, ["A", "B"])
+
+    # -- #3 Root leak: Vec/Mapa/LumenString ---------------------------
+    def test_root_leak_vec_mapa_lumenstring(self):
+        """Vec/Mapa/LumenString não registram root manual — sem vazamento."""
+        h = Heap(nursery_max=32, old_max=64)
+        # Cria N wrappers sem armazenar referência
+        for _ in range(50):
+            Vec(h, [1, 2, 3])
+            Mapa(h, {"k": "v"})
+            LumenString(h, "abc")
+        # Nenhum deve estar nas roots manuais
+        self.assertEqual(len(h._roots), 0)
+        # Coleta libera tudo (não há frame/globals protegendo)
+        h.coletar()
+        self.assertEqual(h.tamanho_total(), 0)
+
+    def test_root_leak_vec_frame_protege(self):
+        """Vec referenciado em frame registrado sobrevive à coleta."""
+        h = Heap(nursery_max=8, old_max=1)
+        frame: dict = {}
+        h.registrar_frame("test", frame)
+        v = Vec(h, [10, 20])
+        frame["v"] = v.obj  # referência ao Objeto interno
+        # aloca mortos
+        for _ in range(20):
+            h.alocar("tmp", 0)
+        h.coletar()
+        # o Vec deve sobreviver por estar no frame
+        self.assertIn(v.obj.id, h._all)
 
 
 if __name__ == "__main__":

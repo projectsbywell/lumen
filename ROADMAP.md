@@ -79,6 +79,34 @@
       idempotente, preserva strings/comentários), CLI `lumen fmt
       [--check|--diff]`, 8 testes. Evidência: `tools/fmt/`.
 
+## v0.5.4 — Integração (unificar versões + docs + gates; 595+17 testes + 50/50)
+
+- [x] **Versões unificadas em `0.5.4`** — `lumen.toml`, `pyproject.toml`
+      (+ `Repository` → `wellintondossantosalmeida-boop/lumen`),
+      `lumen_cli.py` (`__version__` + docstring), `conformance/suite.py`
+      (`SPEC_VERSION`/`SUITE_VERSION`), `docs/gen.py` (`SPEC_VERSION`),
+      `spec/SPEC.md` + `EBNF.md` + `TIPOS.md` + `SEMANTICA.md`;
+      `docs/API.md` regenerado (diff só na linha de versão).
+- [x] **Honestidade da suíte** — nota em `SPEC.md` §8: a suíte 50/50 é um
+      subset v0.1 (não cobre GC/async/traits macroscopicamente; itens 5/9
+      dos revisores em `LIMITACOES.md`, agora v0.5.x com histórico
+      congelado; `REVISORES.md` marcado como histórico v0.1).
+- [x] **SHAs reais** — `infra/releases/SHA256SUMS.txt` com os hashes da tag
+      v0.5.3 (sdist/wheel publicados = build Windows; variantes Linux/macOS
+      registradas como histórico); `README`/`lumen.toml` com comando
+      `sha256sum -c` funcional (verificado por download local, 5/5 OK).
+- [x] **Gate CI `Run examples (001-004)`** — `infra/ci.yml` + espelho
+      `.github/workflows/ci.yml` (idênticos): `compiler/run.py` em
+      001 (`Olá, Lumen!`), 002 (`5! = 120`), 003 (fib 0–34), 004
+      (zero/pequeno/negativo/grande/médio); falha se divergir.
+      **Vermelho em 002/004 até o Fix A pousar (é o propósito do gate).**
+- [x] **Baratas** — passo `Testes unitários (v0.3)`→`(v0.5)` (lista agora
+      inclui `tools.fmt.test_fmt`); smoke 66→70; `docker-entrypoint.py`
+      com a mesma lista do CI (HELP 385→612); `Dockerfile` v0.5 + nota
+      PyInstaller.
+- [x] **Qualidade**: **595 unit + 17 boost OK**, **50/50 conformidade**.
+- Breaking: nenhum.
+
 ## Ideias (sem prazo)
 
 - Self-hosting: reescrever o front-end em Lumen.

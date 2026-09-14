@@ -1,4 +1,16 @@
-# Lumen v0.2 — Limitações conhecidas
+# Lumen v0.5.x — Limitações conhecidas
+
+> **Nota v0.5.4 (integração):** este documento nasceu na v0.2 como
+> registro da revisão independente (8 revisores nativos). Tudo até a
+> seção "Corrigidas nesta release", inclusive, é **histórico congelado**
+> das eras v0.2–v0.4 — preservado como está, sem reedição.
+> Fixes desta leva (v0.5.4, só integração/docs/CI, sem mudança de
+> semântica): versões unificadas em `0.5.4` (manifestos, CLI, suíte,
+> `gen.py`, specs); `docs/API.md` regenerado (diff só na versão);
+> `SHA256SUMS.txt` com SHAs reais da tag v0.5.3 (placeholders
+> removidos); gate CI `Run examples (001-004)` (vermelho em 002/004
+> até o Fix A); smoke 66→70; `docker-entrypoint.py` com a mesma lista
+> de testes do CI; notas da release em `infra/releases/NOTAS_v0.5.4.md`.
 
 > Gerado na revisão independente (8 revisores nativos + tentativa de banca
 > externa via OpenRouter). Itens 1, 2, 4, 5, 6, 7 e 14-parcial resolvidos

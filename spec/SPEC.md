@@ -1,6 +1,6 @@
 # Lumen — Especificação da Linguagem
 
-**Versão:** 0.5.0 (2026-09-14)  
+**Versão:** 0.5.4 (2026-09-14)  
 **Autores:** Lumen Lang Team  
 **Status:** Draft Normativo  
 **Licença:** MIT / Apache-2.0
@@ -373,7 +373,15 @@ pub fn main() -> int {
 
 Todos compartilham `frontend` (lexer/parser → AST → HIR) e `middle` (typeck, borrowck, monomorfização).
 
-Versionamento: SemVer `0.1.0-draft`, ver `ADR-005`.
+Versionamento: SemVer `0.5.4`, ver `ADR-005`.
+
+> **Nota de honestidade (revisão v0.5.4):** a suíte de conformidade
+> `conformance/suite.py` (50/50) é um **subset da v0.1** — cobre lexer,
+> parser, tipos, `match`, struct/enum, bytecode, backends, runtime e
+> stdlib no nível expresso nos casos, mas **não cobre macroscopicamente
+> GC, `async`/concorrência nem traits** (sem casos de pressão de heap,
+> escalonamento, `await` ponta-a-ponta ou verificação de bounds em
+> call-sites). Ver itens 5/9 dos revisores em `LIMITACOES.md`.
 
 ---
 

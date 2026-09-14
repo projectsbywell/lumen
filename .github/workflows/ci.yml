@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Testes unitários (v0.3)
+      - name: Testes unitários (v0.5)
         run: >-
           python3 -m unittest compiler.test_compiler
           compiler.backend.test_backends compiler.backend.test_e2e
@@ -36,7 +36,7 @@ jobs:
           ide.lsp.test_lsp ide.lsp.test_server_extra
           ide.vscode.test_dap
           ide.playground.test_playground conformance.test_conformance
-          test_boost
+          tools.fmt.test_fmt test_boost
 
       - name: Suíte de conformidade (meta 100%)
         run: python3 conformance/suite.py
@@ -65,8 +65,23 @@ jobs:
           name: conformance-${{ matrix.os }}
           path: conformance/conformance_report.json
 
-      - name: Exemplos compilam (smoke, 66; XFAIL em allowlist)
+      - name: Exemplos compilam (smoke, 70; XFAIL em allowlist)
         run: python3 tools/test/check_examples.py
+
+      - name: Run examples (001-004)
+        shell: bash
+        env:
+          PYTHONUTF8: "1"
+        run: |
+          set -euo pipefail
+          out=$(python3 compiler/run.py examples/001_hello.lum 2>/dev/null)
+          test "$out" = "Olá, Lumen!"
+          out=$(python3 compiler/run.py examples/002_fatorial.lum 2>/dev/null)
+          test "$out" = "5! = 120"
+          out=$(python3 compiler/run.py examples/003_fibonacci.lum 2>/dev/null)
+          test "$out" = "$(printf '0\n1\n1\n2\n3\n5\n8\n13\n21\n34')"
+          out=$(python3 compiler/run.py examples/004_match.lum 2>/dev/null)
+          test "$out" = "$(printf 'zero\npequeno\nnegativo\ngrande\nmédio')"
 
       - name: Testes DAP + fmt
         run: python3 -m unittest ide.vscode.test_dap tools.fmt.test_fmt

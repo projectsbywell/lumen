@@ -110,6 +110,8 @@ class Session:
         self._pause = threading.Event()
         self._paused = False
         self._pause_reason = "breakpoint"
+        self._pause_requested = False
+        self._already_terminated = False
         self._step_once = False
         self._thread = None
         self._done = False
@@ -142,6 +144,13 @@ class Session:
                "command": req.get("command", ""), "body": body or {}}
         send_msg(self.out, obj)
         return obj
+
+    def _emit_terminated_once(self):
+        with self.lock:
+            if self._already_terminated:
+                return
+            self._already_terminated = True
+        self.event("terminated")
 
     def _build_debug_map(self, prog, mod):
         """Mapeia (func, pc) -> (line, col) usando spans do front.
@@ -326,6 +335,18 @@ class Session:
             if isinstance(node.op, ast.Sub):
                 return a - b
             if isinstance(node.op, ast.Mult):
+                # anti-DoS: recusa operando str grande ou resultado gigante
+                if isinstance(a, str) and isinstance(b, int):
+                    if len(a) > 10000 or b > 10000 or (b > 0 and len(a) * b > 10000):
+                        raise _Unsupported("str grande")
+                elif isinstance(b, str) and isinstance(a, int):
+                    if len(b) > 10000 or a > 10000 or (a > 0 and len(b) * a > 10000):
+                        raise _Unsupported("str grande")
+                else:
+                    if isinstance(a, str) and len(a) > 10000:
+                        raise _Unsupported("str grande")
+                    if isinstance(b, str) and len(b) > 10000:
+                        raise _Unsupported("str grande")
                 return a * b
             if isinstance(node.op, ast.Div):
                 return a / b
@@ -459,6 +480,15 @@ class Session:
         # bloqueante sem hook não é interrompida, só `_running=False`.
         if self._terminating:
             raise Terminated("terminated")
+        # pause cooperativo: flag armada pelo comando `pause` (sem wait
+        # na thread de despacho); amostrada aqui na thread da VM.
+        if self._pause_requested:
+            self._pause_requested = False
+            self._step_line = False
+            self._step_once = False
+            self._last_break = None
+            self._enter_pause("pause")
+            return
         # v0.4: stopOnEntry — pausa na primeira instrução do entry
         if self._stop_on_entry:
             self._stop_on_entry = False
@@ -606,6 +636,18 @@ class Session:
         self._paused = False
 
     def do_launch(self, req):
+        # relaunch: sinaliza + join da thread antiga como no restart
+        try:
+            if self._thread is not None and self._thread.is_alive():
+                try:
+                    self.vm.hook = None
+                except Exception:  # noqa: BLE001
+                    pass
+                self._pause_requested = False
+                self._pause.set()
+                self._thread.join(timeout=10)
+        except Exception:  # noqa: BLE001
+            pass
         args = req.get("arguments", {})
         prog = args["program"]
         self.program_path = prog
@@ -616,6 +658,10 @@ class Session:
         self._terminating = False
         self._step_line = False
         self._step_once = False
+        self._pause_requested = False
+        self._already_terminated = False
+        self._done = False
+        self._paused = False
         # watchpoints persistem, mas snapshots reiniciam (sem pausa falsa)
         for _k in list(self._data_bps.keys()):
             self._data_bps[_k] = _UNSET
@@ -679,8 +725,8 @@ class Session:
             self._done = True
             for line in self.vm.output:
                 self.event("output", {"category": "stdout",
-                                      "output": line + "\n"})
-            self.event("terminated")
+                                       "output": line + "\n"})
+            self._emit_terminated_once()
 
     def frames_of(self):
         out = []
@@ -921,6 +967,7 @@ class Session:
                 old.hook = None  # thread antiga termina sem pausar de novo
                 self._terminating = False
                 self._step_line = False
+                self._pause_requested = False
                 self._pause.set()
                 if self._thread is not None and self._thread.is_alive():
                     self._thread.join(timeout=10)
@@ -930,6 +977,8 @@ class Session:
             self.vm.hook = self.hook
             self._pause.set()
             self._paused = False
+            self._pause_requested = False
+            self._already_terminated = False
             self._last_break = None
             self._done = False
             self._terminating = False
@@ -956,13 +1005,14 @@ class Session:
             self._terminating = True
             self._stop_on_entry = False
             self._paused = False
+            self._pause_requested = False
             self._step_once = False
             self._step_line = False
             self._last_break = None
             self._hit_counts.clear()
             self._pause.set()
             self._done = True
-            self.event("terminated")
+            self._emit_terminated_once()
             return self.reply(msg)
         if cmd == "setDataBreakpoints":
             # P5.3: watchpoints simples por nome de variável. Pausa quando o
@@ -1033,10 +1083,17 @@ class Session:
                                     "details": {"message": e.get("description", ""),
                                                 "stackTrace": stack_txt}})
         if cmd == "disconnect":
+            self._pause_requested = False
             self._pause.set()
             return self.reply(msg)
         if cmd == "pause":
-            self._enter_pause("pause")
+            # sem wait na thread de despacho (single-thread): só arma
+            # flag amostrada no hook (thread da VM). Evita deadlock onde
+            # pause bloqueava o dispatch e nunca mais processava continue.
+            if self._paused or self._done or self._thread is None \
+                    or not self._thread.is_alive():
+                return self.reply(msg)
+            self._pause_requested = True
             return self.reply(msg)
         return self.reply(msg, {"error": {"message": "comando?" + cmd}}, ok=False)
 

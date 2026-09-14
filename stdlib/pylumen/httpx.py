@@ -4,14 +4,32 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import json
+import io as _io
 from typing import Optional, Dict, Any, List
 from http.client import HTTPResponse
+
+
+class _HTTPErrorWrapper:
+    """Adapts urllib.error.HTTPError to the HTTPResponse interface."""
+
+    def __init__(self, e: urllib.error.HTTPError):
+        self.status = e.code
+        self._headers = e.headers if isinstance(e.headers, dict) else dict(e.headers)
+        self._body = e.read()
+
+    def getheaders(self):
+        return list(self._headers.items())
+
+    def read(self):
+        return self._body
 
 
 class LumenResponse:
     """HTTP response wrapper."""
 
     def __init__(self, response: HTTPResponse):
+        if isinstance(response, urllib.error.HTTPError):
+            response = _HTTPErrorWrapper(response)
         self._response = response
         self.status_code = response.status
         self.headers = dict(response.getheaders())
@@ -72,6 +90,8 @@ class HTTPClient:
                 return LumenResponse(resp)
         except urllib.error.HTTPError as e:
             return LumenResponse(e)
+        except urllib.error.URLError:
+            raise
 
     def get(self, url: str, **kwargs) -> LumenResponse:
         """Send GET request."""

@@ -156,7 +156,7 @@ def execute(db_path: str, sql: str, params: Tuple = ()) -> List[Tuple]:
     conn.execute(sql, params)
     conn.commit()
     if sql.strip().upper().startswith("SELECT"):
-        return conn.fetchall(sql, params)
+        return conn._cursor.fetchall()
     return []
 
 

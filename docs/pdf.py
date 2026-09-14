@@ -4,6 +4,8 @@ import os
 import re
 import sys
 
+VERSAO = "0.5.3"
+
 try:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -87,7 +89,7 @@ def md_to_flow(text, styles):
 def foot(canvas, doc):
     canvas.saveState()
     canvas.setFont("Helvetica", 8)
-    canvas.drawString(2 * cm, 1.2 * cm, "Lumen v0.4 — livro didático (público iniciante)")
+    canvas.drawString(2 * cm, 1.2 * cm, f"Lumen v{VERSAO} — livro didático (público iniciante)")
     canvas.drawRightString(W - 2 * cm, 1.2 * cm, str(doc.page))
     canvas.restoreState()
 
@@ -129,7 +131,7 @@ def main():
     doc = BaseDocTemplate(out, pagesize=A4,
                           leftMargin=2 * cm, rightMargin=2 * cm,
                           topMargin=2 * cm, bottomMargin=2 * cm,
-                          title="Lumen — do zero ao avançado", author="Lumen")
+                          title=f"Lumen v{VERSAO} — do zero ao avançado", author="Lumen")
     frame = Frame(doc.leftMargin, doc.bottomMargin,
                   doc.width, doc.height, id="f")
     doc.addPageTemplates([PageTemplate(id="p", frames=[frame], onPage=foot)])

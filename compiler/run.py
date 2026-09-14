@@ -47,8 +47,6 @@ def main(a):
         return 1
     for line in out:
         print(line)
-    if result is not None:
-        print(result)
     return 0
 
 

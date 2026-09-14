@@ -23,7 +23,6 @@ class Vec:
     def __init__(self, heap: Heap, itens: Optional[List[Any]] = None):
         self._heap = heap
         self._obj = heap.alocar("vec", itens or [])
-        self._heap.marcar_root(self._obj)
 
     @property
     def obj(self) -> Objeto:
@@ -113,7 +112,6 @@ class Mapa:
     def __init__(self, heap: Heap, dados: Optional[Dict[str, Any]] = None):
         self._heap = heap
         self._obj = heap.alocar("mapa", dados or {})
-        self._heap.marcar_root(self._obj)
 
     @property
     def obj(self) -> Objeto:
@@ -177,7 +175,6 @@ class LumenString:
     def __init__(self, heap: Heap, valor: str = ""):
         self._heap = heap
         self._obj = heap.alocar("str", valor)
-        self._heap.marcar_root(self._obj)
 
     @property
     def valor(self) -> str:

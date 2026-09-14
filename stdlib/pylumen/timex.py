@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 
 
 def now() -> float:
-    """Return current Unix timestamp (local time)."""
+    """Return current Unix timestamp (UTC)."""
     return time.time()
 
 

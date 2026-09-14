@@ -1,6 +1,6 @@
 # Lumen — Gramática EBNF Completa
 
-**Versão:** 0.1.0-draft  
+**Versão:** 0.5.4  
 **Status:** Normativa  
 **Depende de:** —  
 **Referenciado por:** `SPEC.md` §3, `TIPOS.md` §1, `SEMANTICA.md` §1

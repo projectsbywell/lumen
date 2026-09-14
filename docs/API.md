@@ -1,6 +1,6 @@
 # Referência da API Lumen (stdlib v0.1)
 
-> Gerado por `docs/gen.py` · spec Lumen v0.1.0.
+> Gerado por `docs/gen.py` · spec Lumen v0.5.4.
 > Para regenerar: `python3 docs/gen.py --src <fontes> --merge docs/API.md`
 > (quando `stdlib/` estiver populada: `--src stdlib`).
 

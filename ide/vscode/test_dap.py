@@ -670,5 +670,112 @@ class TestDAP(unittest.TestCase):
             s.handle(req(10, "disconnect", {}))
 
 
+    def test_pause_then_continue(self):
+        """pause arma flag sem bloquear dispatch: stopped(pause) -> continue."""
+        buf = io.BytesIO()
+        s = Session(buf)
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "loop.lum")
+            open(p, "w", encoding="utf8").write(PROG_LOOP)
+            s.handle(req(1, "initialize", {}))
+            s.handle(req(3, "launch", {"program": p}))
+            s.handle(req(4, "configurationDone", {}))
+            time.sleep(0.5)
+            t0 = time.time()
+            r = s.handle(req(5, "pause", {"threadId": 1}))
+            elapsed = time.time() - t0
+            self.assertTrue(r["success"])
+            self.assertLess(elapsed, 2.0,
+                            f"pause bloqueou dispatch ({elapsed:.2f}s) — deadlock?")
+            stopped = wait_for(buf, "stopped", timeout=8)
+            self.assertIsNotNone(stopped, "pause não gerou stopped")
+            self.assertEqual(stopped["body"]["reason"], "pause")
+            s.handle(req(6, "continue", {"threadId": 1}))
+            time.sleep(0.3)
+            # após continue, ainda viva (loop) — termina via terminate
+            r2 = s.handle(req(7, "terminate", {}))
+            self.assertTrue(r2["success"])
+            self.assertIsNotNone(wait_for(buf, "terminated", timeout=8))
+            s._thread.join(timeout=10)
+            self.assertFalse(s._thread.is_alive())
+            s.handle(req(10, "disconnect", {}))
+
+    def test_terminate_emits_once(self):
+        """terminate duplo não deve emitir `terminated` 2x."""
+        buf = io.BytesIO()
+        s = Session(buf)
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "loop.lum")
+            open(p, "w", encoding="utf8").write(PROG_LOOP)
+            s.handle(req(1, "initialize", {}))
+            s.handle(req(3, "launch", {"program": p}))
+            s.handle(req(4, "configurationDone", {}))
+            time.sleep(0.5)
+            r = s.handle(req(5, "terminate", {}))
+            self.assertTrue(r["success"])
+            self.assertIsNotNone(wait_for(buf, "terminated", timeout=8))
+            s._thread.join(timeout=10)
+            time.sleep(0.5)
+            n = sum(1 for m in events_of(buf) if m.get("event") == "terminated")
+            self.assertEqual(n, 1, f"terminated emitido {n}x, esperado 1x")
+            s.handle(req(10, "disconnect", {}))
+
+    def test_relaunch_joins_old_thread(self):
+        """relaunch (do_launch) sinaliza + join da thread antiga."""
+        buf = io.BytesIO()
+        s = Session(buf)
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "add.lum")
+            open(p, "w", encoding="utf8").write(PROG_LINES)
+            s.handle(req(1, "initialize", {}))
+            s.handle(req(2, "setBreakpoints",
+                         {"source": {"path": p},
+                          "breakpoints": [{"line": 6}]}))
+            s.handle(req(3, "launch", {"program": p}))
+            s.handle(req(4, "configurationDone", {}))
+            self.assertIsNotNone(wait_for(buf, "stopped", timeout=8),
+                                 "primeiro run não parou")
+            old = s._thread
+            self.assertTrue(old.is_alive())
+            s.handle(req(5, "launch", {"program": p}))
+            time.sleep(0.5)
+            self.assertFalse(old.is_alive(),
+                             "thread antiga não sofreu join no relaunch")
+            self.assertIsNot(old, s._thread)
+            self.assertTrue(wait_for_n(buf, "stopped", 2, timeout=10),
+                            "segundo run não parou após relaunch")
+            self.assertIsNotNone(_finish(s, buf))
+            s.handle(req(10, "disconnect", {}))
+            s._thread.join(timeout=10)
+
+    def test_evaluate_mult_str_dos_refused(self):
+        """_eval_node Mult recusa 'a'*1000000 (sem alocar DoS)."""
+        buf = io.BytesIO()
+        s = Session(buf)
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "add.lum")
+            open(p, "w", encoding="utf8").write(PROG_LINES)
+            s.handle(req(1, "initialize", {}))
+            s.handle(req(2, "setBreakpoints",
+                         {"source": {"path": p},
+                          "breakpoints": [{"line": 2}]}))
+            s.handle(req(3, "launch", {"program": p}))
+            s.handle(req(4, "configurationDone", {}))
+            self.assertIsNotNone(wait_for(buf, "stopped", timeout=8))
+            t0 = time.time()
+            bad = s.handle(req(5, "evaluate",
+                               {"expression": '"a"*1000000',
+                                "context": "hover"}))
+            elapsed = time.time() - t0
+            self.assertIn("não suportado", bad["body"]["result"])
+            self.assertLess(elapsed, 2.0, "evaluate DoS demorou — alocou?")
+            ok = s.handle(req(6, "evaluate",
+                              {"expression": '"a"*100', "context": "hover"}))
+            self.assertIn("aaa", ok["body"]["result"])
+            self.assertIsNotNone(_finish(s, buf))
+            s.handle(req(11, "disconnect", {}))
+            s._thread.join(timeout=10)
+
+
 if __name__ == "__main__":
     unittest.main()

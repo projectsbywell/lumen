@@ -10,9 +10,12 @@ Future: promessa de valor futuro com poll() e waker.
 from __future__ import annotations
 
 import enum
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Deque, Dict, List, Optional
 from collections import deque
+
+log = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -42,13 +45,14 @@ class Future:
     Promessa de valor futuro.
 
     poll() retorna EstadoFuture.PENDENTE ou EstadoFuture.PRONTO.
-    set_result(valor) resolve a future e acorda quem aguarda via waker.
+    set_result(valor) resolve a future e acorda quem aguarda via wakers.
+    Suporta múltiplos awaiters (lista de wakers).
     """
 
     def __init__(self):
         self._estado: EstadoFuture = EstadoFuture.PENDENTE
         self._valor: Any = None
-        self._waker: Optional[Callable[['Future'], None]] = None
+        self._wakers: List[Callable[['Future'], None]] = []
 
     def poll(self) -> EstadoFuture:
         """Verifica o estado da future."""
@@ -65,11 +69,12 @@ class Future:
         return self._estado == EstadoFuture.PRONTO
 
     def set_result(self, valor: Any) -> None:
-        """Resolve a future com um valor e acorda quem aguarda."""
+        """Resolve a future com um valor e acorda todos os awaiters."""
         self._valor = valor
         self._estado = EstadoFuture.PRONTO
-        if self._waker:
-            self._waker(self)
+        for waker in list(self._wakers):
+            waker(self)
+        self._wakers.clear()
 
     def __repr__(self) -> str:
         return f"Future(estado={self._estado.value}, valor={self._valor})"
@@ -142,6 +147,7 @@ class Tarefa:
         try:
             self._coro = self._gen_fn(*self._args)
         except TypeError:
+            log.debug("Tarefa._init_coro: retry sem args para %s", self._gen_fn)
             self._coro = self._gen_fn()
 
     def step(self, valor: Any = None) -> Any:
@@ -328,7 +334,7 @@ class Escalonador:
                 else:
                     # Future pendente → estaciona a tarefa
                     tarefa.estado = EstadoTarefa.BLOQ
-                    future._waker = self._criar_waker(tarefa)
+                    future._wakers.append(self._criar_waker(tarefa))
 
             elif tipo == "await_channel" and len(resultado) >= 2:
                 ch = resultado[1]

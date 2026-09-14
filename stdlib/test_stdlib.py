@@ -237,6 +237,13 @@ class TestCollections(unittest.TestCase):
         s.remove(1)
         self.assertFalse(s.has(1))
 
+    def test_set_remove_keyerror(self):
+        """Set.remove raises KeyError when item absent (not silent)."""
+        s = Set()
+        s.add(1)
+        with self.assertRaises(KeyError):
+            s.remove(999)
+
     def test_set_union_intersection_difference(self):
         a = Set({1, 2, 3})
         b = Set({2, 3, 4})
@@ -416,6 +423,14 @@ class TestIO(unittest.TestCase):
         self.assertIsNotNone(stdout)
         self.assertIsNotNone(stderr)
 
+    def test_lumenfile_read_zero(self):
+        """read(0) must return '' without consuming the file."""
+        path = os.path.join(tempfile.gettempdir(), "test_io_read0.txt")
+        write_file(path, "hello")
+        with _io.LumenFile(path) as f:
+            self.assertEqual(f.read(0), "")
+            self.assertEqual(f.read(), "hello")
+
 
 class TestMathx(unittest.TestCase):
     """Tests for pylumen/mathx.py"""
@@ -502,6 +517,18 @@ class TestMathx(unittest.TestCase):
         m = [[1, 2], [3, 4]]
         self.assertEqual(lmat_scalar_mul(m, 3), [[3, 6], [9, 12]])
 
+    def test_lmat_add_empty(self):
+        """lmat_add with empty matrices raises ValueError, not IndexError."""
+        with self.assertRaises(ValueError):
+            lmat_add([], [[1]])
+        self.assertEqual(lmat_add([], []), [])
+
+    def test_lmat_mul_empty(self):
+        """lmat_mul with empty matrices raises ValueError, not IndexError."""
+        with self.assertRaises(ValueError):
+            lmat_mul([], [[1]])
+        self.assertEqual(lmat_mul([], []), [])
+
 
 class TestTimex(unittest.TestCase):
     """Tests for pylumen/timex.py"""
@@ -565,6 +592,15 @@ class TestTimex(unittest.TestCase):
     def test_weekday(self):
         dt = datetime.datetime(2024, 1, 1)  # Monday
         self.assertEqual(weekday(dt), 0)
+
+    def test_now_utc_documentation(self):
+        """now() and now_utc() both return UTC timestamps (time.time())."""
+        t1 = now()
+        t2 = now_utc()
+        self.assertIsInstance(t1, float)
+        self.assertIsInstance(t2, float)
+        # Both should be close to each other (both use time.time())
+        self.assertAlmostEqual(t1, t2, delta=1.0)
 
     def test_is_leap_year(self):
         self.assertTrue(is_leap_year(2024))
@@ -653,6 +689,11 @@ class TestJsonx(unittest.TestCase):
         self.assertTrue(lis_json('{"a": 1}'))
         self.assertFalse(lis_json("not json"))
 
+    def test_lis_json_typeerror(self):
+        """lis_json handles None and other non-str inputs without TypeError."""
+        self.assertFalse(lis_json(None))
+        self.assertFalse(lis_json(42))
+
     def test_lmerge(self):
         result = lmerge({"a": 1}, {"b": 2})
         self.assertEqual(result, {"a": 1, "b": 2})
@@ -682,6 +723,16 @@ class TestHttpx(unittest.TestCase):
         self.assertTrue(hasattr(post, "__call__"))
         self.assertTrue(hasattr(put, "__call__"))
         self.assertTrue(hasattr(delete, "__call__"))
+
+    def test_httpx_http_error_response(self):
+        """LumenResponse can be built from an HTTPError (404 simulated)."""
+        import urllib.error as _ue
+        fake_err = _ue.HTTPError("http://x/404", 404, "Not Found", {"Content-Type": "text/plain"}, None)
+        resp = _hx.LumenResponse(fake_err)
+        self.assertEqual(resp.status_code, 404)
+        self.assertTrue(resp.is_error())
+        self.assertFalse(resp.is_success())
+        self.assertEqual(resp.text(), "")
 
 
 class TestSqlitex(unittest.TestCase):
@@ -752,6 +803,16 @@ class TestSqlitex(unittest.TestCase):
         self.assertEqual(len(rows), 3)
         disconnect(":memory:")
 
+    def test_execute_no_double_exec(self):
+        """verify execute() doesn't run SQL twice (fix: uses cursor.fetchall directly)."""
+        db = ":memory:"
+        _sq.execute(db, "CREATE TABLE t (x INT)")
+        _sq.execute(db, "INSERT INTO t VALUES (42)")
+        rows = _sq.execute(db, "SELECT x FROM t")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][0], 42)
+        disconnect(db)
+
 
 class TestTestingx(unittest.TestCase):
     """Tests for pylumen/testingx.py"""
@@ -796,6 +857,12 @@ class TestTestingx(unittest.TestCase):
 
     def test_assert_almost_eq(self):
         self.assertTrue(assert_almost_eq(1.0, 1.0000001))
+
+    def test_assert_almost_eq_boundary(self):
+        """assert_almost_eq uses math.isclose, not round() — boundary-safe."""
+        self.assertTrue(assert_almost_eq(0.0, 1e-7, places=6))
+        with self.assertRaises(AssertError):
+            assert_almost_eq(0.0, 1e-5, places=6)
 
     def test_assert_greater(self):
         self.assertTrue(assert_greater(2, 1))

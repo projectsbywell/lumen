@@ -94,6 +94,28 @@ class TestE2E(unittest.TestCase):
         result, _ = exec_dict(mod)
         self.assertEqual(result, 55 + 200)  # soma(10)=55 + classifica(2)=200
 
+    def test_002_fatorial_result_match(self):
+        """Fix A: lowering match Ok(v)/Err(e) + `?` — examples/002 na VM."""
+        src = open(os.path.join(os.path.dirname(__file__), "..", "..",
+                                "examples", "002_fatorial.lum"),
+                   encoding="utf8").read()
+        mod = pipeline(src)
+        rep = verificar_dict(mod)
+        self.assertEqual(rep["erros"], [], rep)
+        _, out = exec_dict(mod)
+        self.assertIn("5! = 120", out)
+
+    def test_004_match_guards_or(self):
+        """Fix A: variável `v` com guards + or-pattern — examples/004 na VM."""
+        src = open(os.path.join(os.path.dirname(__file__), "..", "..",
+                                "examples", "004_match.lum"),
+                   encoding="utf8").read()
+        mod = pipeline(src)
+        rep = verificar_dict(mod)
+        self.assertEqual(rep["erros"], [], rep)
+        _, out = exec_dict(mod)
+        self.assertEqual(out, ["zero", "pequeno", "negativo", "grande", "médio"])
+
     def test_verificador_captura_pilha_vazia(self):
         mod = pipeline("fn main() -> int { return 7; }")
         bad = json.loads(json.dumps(mod))

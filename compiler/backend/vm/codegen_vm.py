@@ -71,6 +71,16 @@ def gerar_dict(mod_ir, entry: str = "main") -> dict:
                     raw.append(("NOT", None))
                     raw.append(("STORE", i.dst))
                     stored.append(i.dst)
+                elif op == "is_ok":
+                    raw.append(("LOAD", i.args[0] if i.args else None))
+                    raw.append(("IS_OK", None))
+                    raw.append(("STORE", i.dst))
+                    stored.append(i.dst)
+                elif op == "unwrap":
+                    raw.append(("LOAD", i.args[0] if i.args else None))
+                    raw.append(("UNWRAP", None))
+                    raw.append(("STORE", i.dst))
+                    stored.append(i.dst)
                 # --- async P5.2 (mínimo viável) ---
                 elif op == "spawn":
                     func = i.args[0] if i.args else ""
@@ -276,10 +286,20 @@ def verificar_dict(mod: dict) -> dict:
                 if depth < 1:
                     erros.append(f"{fname}: NOT com pilha vazia em pc={pc}")
                 work.append((pc + 1, depth))
+            elif op in ("IS_OK", "UNWRAP"):
+                if depth < 1:
+                    erros.append(f"{fname}: {op} com pilha vazia em pc={pc}")
+                    work.append((pc + 1, 0))
+                else:
+                    work.append((pc + 1, depth))
             elif op == "CALL":
+                _BUILTIN_ARITY = {"Ok": 1, "Err": 1, "str::from_int": 1,
+                                  "assert_eq": 2, "assert_ne": 2, "assert": 1,
+                                  "assert_almost_eq": 2, "len": 1, "str": 1,
+                                  "int": 1, "float": 1, "bool": 1, "panic": 1}
                 if arg not in arity_of:
                     avisos.append(f"{fname}: CALL para função desconhecida `{arg}` em pc={pc}")
-                    ar = 0
+                    ar = _BUILTIN_ARITY.get(arg, 0)
                 else:
                     ar = arity_of[arg]
                 if depth < ar:

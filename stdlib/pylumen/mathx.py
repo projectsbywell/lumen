@@ -48,17 +48,21 @@ def lpow(a: Number, b: Number) -> Number:
 
 def lmat_add(a: Matrix, b: Matrix) -> Matrix:
     """Add two matrices."""
-    if len(a) != len(b) or len(a[0]) != len(b[0]):
+    rows_a, cols_a = (len(a), len(a[0]) if a else 0)
+    rows_b, cols_b = (len(b), len(b[0]) if b else 0)
+    if rows_a != rows_b or cols_a != cols_b:
         raise ValueError("matrix dimensions must match")
-    return [[a[i][j] + b[i][j] for j in range(len(a[0]))] for i in range(len(a))]
+    return [[a[i][j] + b[i][j] for j in range(cols_a)] for i in range(rows_a)]
 
 
 def lmat_mul(a: Matrix, b: Matrix) -> Matrix:
     """Multiply two matrices."""
-    rows_a, cols_a = len(a), len(a[0])
-    rows_b, cols_b = len(b), len(b[0])
+    rows_a, cols_a = len(a), len(a[0]) if a else 0
+    rows_b, cols_b = len(b), len(b[0]) if b else 0
     if cols_a != rows_b:
         raise ValueError(f"cannot multiply {rows_a}x{cols_a} by {rows_b}x{cols_b}")
+    if not rows_a or not cols_b:
+        return []
     result = [[sum(a[i][k] * b[k][j] for k in range(cols_a)) for j in range(cols_b)] for i in range(rows_a)]
     return result
 

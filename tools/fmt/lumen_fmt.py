@@ -6,6 +6,8 @@ Regras:
   - indent 4
   - espaços ao redor de `=(){},;:` (normalizado via tabela no_space_before/after)
   - quebras após `{` / `}` / `;`
+  - `<`/`>`: tight (comportamento atual; distinção comparação-vs-genérico
+    é backlog documentado em LIMITACOES.md)
   - preserva strings (incl. raw), char, DOC (`///`), comentários `//` e `/* */`
   - idempotente: fmt(fmt(x)) == fmt(x)
   - erro léxico com linha:col limpo (propaga LexError do lexer)
@@ -35,6 +37,7 @@ def _scan(src: str):
     """Retorna lista de (kind, text) preservando comentários e strings.
     kinds: DOC, LINE_COMMENT, BLOCK_COMMENT, STRING, CHAR, RAW_STRING,
            IDENT, NUMBER, OP, PUNCT
+    pos: índice do início do token em src (para detectar quebras de linha).
     Levanta LexError em string/bloco não terminado ou char inválido.
     """
     toks = []

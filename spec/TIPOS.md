@@ -1,6 +1,6 @@
 # Lumen — Sistema de Tipos
 
-**Versão:** 0.1.0-draft  
+**Versão:** 0.5.4  
 **Status:** Normativo — complementa `EBNF.md` e `SEMANTICA.md`  
 **Referência-mãe:** `SPEC.md` §4
 
